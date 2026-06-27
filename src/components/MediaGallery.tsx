@@ -12,44 +12,7 @@ interface MediaItem {
   title: string;
 }
 
-const DUMMY_MEDIA: MediaItem[] = [
-  {
-    id: "1",
-    type: "image",
-    url: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80",
-    category: "Conferences",
-    title: "Main Stage 2024",
-  },
-  {
-    id: "2",
-    type: "image",
-    url: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&q=80",
-    category: "Campus Chapters",
-    title: "University Meetup",
-  },
-  {
-    id: "3",
-    type: "image",
-    url: "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&q=80",
-    category: "Outreach",
-    title: "Community Service",
-  },
-  {
-    id: "4",
-    type: "video",
-    url: "https://www.w3schools.com/html/mov_bbb.mp4",
-    thumbnail: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=80",
-    category: "Conferences",
-    title: "Highlight Reel 2024",
-  },
-  {
-    id: "5",
-    type: "image",
-    url: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80",
-    category: "The Exchange",
-    title: "Workshop Session",
-  },
-];
+
 
 const CATEGORIES = ["All", "Conferences", "Campus Chapters", "The Exchange", "Outreach", "Community Activities"];
 
@@ -59,6 +22,7 @@ export function MediaGallery() {
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchMedia() {
@@ -78,20 +42,20 @@ export function MediaGallery() {
         if (data && data.length > 0) {
           const formattedData = data.map((item: any) => ({
             id: item._id,
-            type: item.type,
-            title: item.title,
-            category: item.category,
-            url: item.type === 'image' ? urlFor(item.image).url() : item.videoUrl,
+            type: item.type || "image",
+            title: item.title || "Untitled",
+            category: item.category || "General",
+            url: item.type === 'video' ? item.videoUrl : (item.image ? urlFor(item.image).url() : ""),
             thumbnail: item.thumbnail ? urlFor(item.thumbnail).url() : undefined,
-          }));
+          })).filter((item: any) => item.url !== "");
           setMediaItems(formattedData);
         } else {
-          // Fallback to dummy data if empty
-          setMediaItems(DUMMY_MEDIA);
+          setMediaItems([]);
         }
-      } catch (error) {
-        console.warn("Failed to fetch from Sanity. Falling back to placeholder data.", error);
-        setMediaItems(DUMMY_MEDIA);
+      } catch (error: any) {
+        console.warn("Failed to fetch from Sanity.", error);
+        setErrorMsg(error?.message || "An unknown error occurred while fetching.");
+        setMediaItems([]);
       } finally {
         setLoading(false);
       }
@@ -135,6 +99,17 @@ export function MediaGallery() {
 
       {loading ? (
         <div className="w-full py-20 flex justify-center text-foreground-muted">Loading gallery...</div>
+      ) : errorMsg ? (
+        <div className="w-full py-20 flex flex-col items-center justify-center text-red-400 text-center border border-red-500/20 bg-red-500/10 rounded-2xl p-6">
+          <p className="text-xl font-bold mb-2">Error Connecting to Sanity</p>
+          <p className="mb-4 text-red-400/80 max-w-lg">{errorMsg}</p>
+          <p className="text-sm text-red-400/60 max-w-lg">If this says "CORS", you need to allow this website's URL in your Sanity project settings (or run `npx sanity cors add [your-website-url]` in the studio folder).</p>
+        </div>
+      ) : filteredMedia.length === 0 ? (
+        <div className="w-full py-20 flex flex-col items-center justify-center text-foreground-muted text-center border border-white/5 rounded-2xl glass-panel p-6">
+          <p className="text-xl font-bold mb-2">No media found.</p>
+          <p>Once you upload media in the Sanity Studio and publish it, it will appear here.</p>
+        </div>
       ) : (
         <motion.div layout className="columns-1 sm:columns-2 md:columns-3 gap-4 space-y-4">
           <AnimatePresence>

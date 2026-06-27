@@ -9,8 +9,50 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TribeRouteImport } from './routes/tribe'
+import { Route as OutreachRouteImport } from './routes/outreach'
+import { Route as MediaRouteImport } from './routes/media'
+import { Route as JoinRouteImport } from './routes/join'
+import { Route as ImpactRouteImport } from './routes/impact'
+import { Route as ConferenceRouteImport } from './routes/conference'
+import { Route as CampusRouteImport } from './routes/campus'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TribeRoute = TribeRouteImport.update({
+  id: '/tribe',
+  path: '/tribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OutreachRoute = OutreachRouteImport.update({
+  id: '/outreach',
+  path: '/outreach',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MediaRoute = MediaRouteImport.update({
+  id: '/media',
+  path: '/media',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoinRoute = JoinRouteImport.update({
+  id: '/join',
+  path: '/join',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImpactRoute = ImpactRouteImport.update({
+  id: '/impact',
+  path: '/impact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConferenceRoute = ConferenceRouteImport.update({
+  id: '/conference',
+  path: '/conference',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CampusRoute = CampusRouteImport.update({
+  id: '/campus',
+  path: '/campus',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +61,130 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/campus': typeof CampusRoute
+  '/conference': typeof ConferenceRoute
+  '/impact': typeof ImpactRoute
+  '/join': typeof JoinRoute
+  '/media': typeof MediaRoute
+  '/outreach': typeof OutreachRoute
+  '/tribe': typeof TribeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/campus': typeof CampusRoute
+  '/conference': typeof ConferenceRoute
+  '/impact': typeof ImpactRoute
+  '/join': typeof JoinRoute
+  '/media': typeof MediaRoute
+  '/outreach': typeof OutreachRoute
+  '/tribe': typeof TribeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/campus': typeof CampusRoute
+  '/conference': typeof ConferenceRoute
+  '/impact': typeof ImpactRoute
+  '/join': typeof JoinRoute
+  '/media': typeof MediaRoute
+  '/outreach': typeof OutreachRoute
+  '/tribe': typeof TribeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/campus'
+    | '/conference'
+    | '/impact'
+    | '/join'
+    | '/media'
+    | '/outreach'
+    | '/tribe'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/campus'
+    | '/conference'
+    | '/impact'
+    | '/join'
+    | '/media'
+    | '/outreach'
+    | '/tribe'
+  id:
+    | '__root__'
+    | '/'
+    | '/campus'
+    | '/conference'
+    | '/impact'
+    | '/join'
+    | '/media'
+    | '/outreach'
+    | '/tribe'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CampusRoute: typeof CampusRoute
+  ConferenceRoute: typeof ConferenceRoute
+  ImpactRoute: typeof ImpactRoute
+  JoinRoute: typeof JoinRoute
+  MediaRoute: typeof MediaRoute
+  OutreachRoute: typeof OutreachRoute
+  TribeRoute: typeof TribeRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tribe': {
+      id: '/tribe'
+      path: '/tribe'
+      fullPath: '/tribe'
+      preLoaderRoute: typeof TribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/outreach': {
+      id: '/outreach'
+      path: '/outreach'
+      fullPath: '/outreach'
+      preLoaderRoute: typeof OutreachRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/media': {
+      id: '/media'
+      path: '/media'
+      fullPath: '/media'
+      preLoaderRoute: typeof MediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/join': {
+      id: '/join'
+      path: '/join'
+      fullPath: '/join'
+      preLoaderRoute: typeof JoinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/impact': {
+      id: '/impact'
+      path: '/impact'
+      fullPath: '/impact'
+      preLoaderRoute: typeof ImpactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/conference': {
+      id: '/conference'
+      path: '/conference'
+      fullPath: '/conference'
+      preLoaderRoute: typeof ConferenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/campus': {
+      id: '/campus'
+      path: '/campus'
+      fullPath: '/campus'
+      preLoaderRoute: typeof CampusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,7 +197,24 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CampusRoute: CampusRoute,
+  ConferenceRoute: ConferenceRoute,
+  ImpactRoute: ImpactRoute,
+  JoinRoute: JoinRoute,
+  MediaRoute: MediaRoute,
+  OutreachRoute: OutreachRoute,
+  TribeRoute: TribeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
