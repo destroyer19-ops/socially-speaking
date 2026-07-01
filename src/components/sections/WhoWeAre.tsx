@@ -1,9 +1,12 @@
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/Reveal";
 import { Hammer, Zap, Rocket } from "lucide-react";
 import { SectionDivider } from "@/components/SectionDivider";
 import portraitImg from "@/assets/portrait-leader.jpg";
-import campusCandidImg from "@/assets/campus-candid.jpg";
-import speakerImg from "@/assets/speaker.jpg";
+import campusCandidImg from "@/assets/IMG_4373-scaled.jpg";
+import speakerImg from "@/assets/LHI07982-scaled.jpg";
+import tribeImg from "@/assets/LHI09017.jpg";
 
 const pillars = [
   {
@@ -23,46 +26,122 @@ const pillars = [
   },
 ];
 
+// The four photos that make up the collage, largest/most important first.
+const collage = [
+  { src: portraitImg, alt: "Young African leader" },
+  { src: campusCandidImg, alt: "Friends on campus" },
+  { src: tribeImg, alt: "Members of The Tribe community" },
+  { src: speakerImg, alt: "A speaker addressing the audience" },
+];
+
 export function WhoWeAre() {
+  const collageRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: collageRef,
+    offset: ["start end", "end start"],
+  });
+
+  // Each tile drifts at a slightly different rate/direction for depth.
+  const yPortrait = useTransform(scrollYProgress, [0, 1], [22, -22]);
+  const yCampus = useTransform(scrollYProgress, [0, 1], [-16, 16]);
+  const ySpeaker = useTransform(scrollYProgress, [0, 1], [34, -34]);
+  const yTribe = useTransform(scrollYProgress, [0, 1], [-26, 26]);
+  const rotateBadge = useTransform(scrollYProgress, [0, 1], [-3, 3]);
+
   return (
-    <section id="who" className="relative bg-paper text-on-paper">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-24 sm:py-32">
+    <section id="who" className="relative overflow-hidden bg-paper text-on-paper">
+      {/* Light ambient wash — purple/blue bleeding into ash-white */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-purple/[0.05] via-paper to-blue-glow/[0.07]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-32 left-[12%] h-[420px] w-[420px] rounded-full bg-purple/10 blur-[110px]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute bottom-[-10%] right-0 h-[380px] w-[380px] rounded-full bg-blue-glow/10 blur-[110px]"
+      />
+
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-24 sm:py-32">
         <div className="grid lg:grid-cols-[1fr_1.05fr] gap-12 lg:gap-16 items-center">
           {/* Image collage */}
-          <Reveal className="relative h-[460px] sm:h-[560px] lg:h-[640px] order-2 lg:order-1">
-            <div className="absolute top-0 left-0 h-[78%] w-[68%] rounded-3xl overflow-hidden shadow-[var(--shadow-card-light)]">
-              <img
-                src={portraitImg}
-                alt="Young African leader"
-                loading="lazy"
-                className="h-full w-full object-cover"
-                width={1280}
-                height={1600}
-              />
-            </div>
-            <div className="absolute bottom-0 right-0 h-[60%] w-[60%] rounded-3xl overflow-hidden ring-1 ring-black/10 shadow-[var(--shadow-card-light)]">
-              <img
-                src={campusCandidImg}
-                alt="Friends on campus"
-                loading="lazy"
-                className="h-full w-full object-cover"
-                width={1280}
-                height={1600}
-              />
-            </div>
-            <div className="absolute top-[40%] right-[6%] h-32 w-32 sm:h-40 sm:w-40 rounded-2xl overflow-hidden ring-4 ring-paper">
-              <img src={speakerImg} alt="" aria-hidden loading="lazy" className="h-full w-full object-cover" />
-            </div>
-            <div className="absolute top-[8%] right-[2%] glass-paper rounded-2xl p-4 max-w-[180px] shadow-[var(--shadow-card-light)]">
-              <div className="text-[10px] tracking-[0.2em] uppercase text-on-paper-subtle">
-                The Movement
-              </div>
-              <div className="mt-1 font-display font-black text-2xl text-ink-deep leading-none">
-                1,000+
-              </div>
-              <div className="mt-1 text-xs text-on-paper-subtle">
-                Young leaders, one tribe.
-              </div>
+          <Reveal className="relative h-[440px] sm:h-[540px] lg:h-[620px] order-2 lg:order-1">
+            <div ref={collageRef} className="relative h-full w-full">
+              {/* Large portrait — top-left anchor */}
+              <motion.div
+                style={{ y: yPortrait }}
+                className="absolute top-0 left-0 h-[62%] w-[58%] rounded-3xl overflow-hidden shadow-[var(--shadow-card-light)] will-change-transform"
+              >
+                <img
+                  src={collage[0].src}
+                  alt={collage[0].alt}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                  width={1280}
+                  height={1600}
+                />
+              </motion.div>
+
+              {/* Campus candid — bottom-left, peeking under the portrait */}
+              <motion.div
+                style={{ y: yCampus }}
+                className="absolute bottom-0 left-[4%] h-[42%] w-[46%] rounded-3xl overflow-hidden ring-4 ring-paper shadow-[var(--shadow-card-light)] will-change-transform"
+              >
+                <img
+                  src={collage[1].src}
+                  alt={collage[1].alt}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                  width={1280}
+                  height={1600}
+                />
+              </motion.div>
+
+              {/* Speaker — floating square, top-right */}
+              <motion.div
+                style={{ y: ySpeaker }}
+                className="absolute top-[8%] right-0 h-[34%] w-[34%] rounded-2xl overflow-hidden ring-4 ring-paper shadow-[var(--shadow-card-light)] will-change-transform"
+              >
+                <img
+                  src={collage[3].src}
+                  alt={collage[3].alt}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
+              </motion.div>
+
+              {/* Tribe moment — bottom-right anchor */}
+              <motion.div
+                style={{ y: yTribe }}
+                className="absolute bottom-[6%] right-0 h-[46%] w-[42%] rounded-3xl overflow-hidden ring-4 ring-paper shadow-[var(--shadow-card-light)] will-change-transform"
+              >
+                <img
+                  src={collage[2].src}
+                  alt={collage[2].alt}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                  width={1280}
+                  height={1600}
+                />
+              </motion.div>
+
+              {/* Stat badge — pinned to the top-right corner, tilts gently as you scroll */}
+              {/* <motion.div
+                style={{ rotate: rotateBadge }}
+                className="absolute -top-4 -right-2 sm:-top-6 sm:-right-4 z-10 glass-paper rounded-2xl p-4 max-w-[170px] shadow-[var(--shadow-card-light)] will-change-transform"
+              >
+                <div className="text-[10px] tracking-[0.2em] uppercase text-on-paper-subtle">
+                  The Movement
+                </div>
+                <div className="mt-1 font-display font-black text-2xl text-ink-deep leading-none">
+                  1,000+
+                </div>
+                <div className="mt-1 text-xs text-on-paper-subtle">
+                  Young leaders, one tribe.
+                </div>
+              </motion.div> */}
             </div>
           </Reveal>
 
@@ -77,8 +156,8 @@ export function WhoWeAre() {
               </h2>
             </Reveal>
 
-            <Reveal delay={0.1} className="mt-7 space-y-5 text-on-paper text-lg leading-relaxed">
-              <p>
+            <Reveal delay={0.1} className="mt-7 space-y-5 text-on-paper text-lg leading-relaxed text-justify">
+              <p className="text-justify">
                 Socially Speaking exists to build, equip, and develop a new
                 generation of excellent, audacious, and resilient young leaders
                 who invest in the quality of their personalities in order to
@@ -89,12 +168,12 @@ export function WhoWeAre() {
                 We believe success is more than personal achievement.
               </p>
               <ul className="space-y-3 border-l-2 border-purple/60 pl-5">
-                <li>Success is impacting your world with the investment of your personality.</li>
-                <li>Success is influencing the world around you to think better, aspire higher, and be excellent.</li>
-                <li>Success is making the world around you better than how you met it.</li>
+                <li className="[text-align:justify]">Success is impacting your world with the investment of your personality.</li>
+                <li className="[text-align:justify]">Success is influencing the world around you to think better, aspire higher, and be excellent.</li>
+                <li className="[text-align:justify]">Success is making the world around you better than how you met it.</li>
               </ul>
               <p className="text-ink-deep font-semibold">That is why Socially Speaking exists.</p>
-              <p>
+              <p className="[text-align:justify]">
                 We are building a generation of young Africans who think
                 critically, grow intentionally, build valuable skills, form
                 meaningful relationships, and create lasting impact.
@@ -117,8 +196,8 @@ export function WhoWeAre() {
                         i === 0
                           ? "radial-gradient(circle, #6a189a, transparent 70%)"
                           : i === 1
-                          ? "radial-gradient(circle, #1f7bb6, transparent 70%)"
-                          : "radial-gradient(circle, #56a0ff, transparent 70%)",
+                            ? "radial-gradient(circle, #1f7bb6, transparent 70%)"
+                            : "radial-gradient(circle, #56a0ff, transparent 70%)",
                     }}
                   />
                   <div className="relative">
