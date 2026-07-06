@@ -143,49 +143,49 @@ export function Ecosystem() {
           </a>
         </Reveal>
 
-      {/* Connector line from hub down to the card row */}
-      <div className="mx-auto h-10 w-px bg-gradient-to-b from-white/30 to-white/5" aria-hidden />
+        {/* Connector line from hub down to the card row */}
+        <div className="mx-auto h-10 w-px bg-gradient-to-b from-white/30 to-white/5" aria-hidden />
 
-      {/* Card grid — replaces the circular layout entirely */}
-      <StaggerGroup className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {nodes.map(function (n) {
-          const Icon = n.icon;
-          return (
-            <StaggerItem key={n.id}>
-              <a
-                href={n.href}
-                className="group relative flex h-full flex-col rounded-3xl glass-strong p-6 text-white transition-transform hover:-translate-y-1"
-              >
-              <span
-                className="absolute left-1/2 -top-10 h-10 w-px -translate-x-1/2 bg-gradient-to-b from-transparent to-white/20"
-                aria-hidden
-              />
-              <div className="flex items-center justify-between">
-                <span
-                  className="grid h-12 w-12 place-items-center rounded-2xl"
-                  style={{ backgroundColor: n.color + "22" }}
+        {/* Card grid — replaces the circular layout entirely */}
+        <StaggerGroup className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {nodes.map(function (n) {
+            const Icon = n.icon;
+            return (
+              <StaggerItem key={n.id}>
+                <a
+                  href={n.href}
+                  className="group relative flex h-full flex-col rounded-3xl glass-strong p-6 text-white transition-transform hover:-translate-y-1"
                 >
-                  <Icon size={22} style={{ color: n.color }} />
-                </span>
-                <ArrowUpRight
-                  size={16}
-                  className="text-white/40 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-white"
-                  aria-hidden
-                />
-              </div>
-              <h3 className="mt-5 font-display font-black text-lg leading-tight">
-                {n.label}
-              </h3>
-              <p className="mt-2 text-sm text-white/60 leading-relaxed">
-                {n.description}
-              </p>
-            </a>
+                  <span
+                    className="absolute left-1/2 -top-10 h-10 w-px -translate-x-1/2 bg-gradient-to-b from-transparent to-white/20"
+                    aria-hidden
+                  />
+                  <div className="flex items-center justify-between">
+                    <span
+                      className="grid h-12 w-12 place-items-center rounded-2xl"
+                      style={{ backgroundColor: n.color + "22" }}
+                    >
+                      <Icon size={22} style={{ color: n.color }} />
+                    </span>
+                    <ArrowUpRight
+                      size={16}
+                      className="text-white/40 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-white"
+                      aria-hidden
+                    />
+                  </div>
+                  <h3 className="mt-5 font-display font-black text-lg leading-tight">
+                    {n.label}
+                  </h3>
+                  <p className="mt-2 text-sm text-white/60 leading-relaxed">
+                    {n.description}
+                  </p>
+                </a>
               </StaggerItem>
-      );
+            );
           })}
-    </StaggerGroup>
+        </StaggerGroup>
       </div >
-    <SectionDivider to="ink-warm" variant="slope" />
+      {/* <SectionDivider to="ink-warm" variant="slope" /> */}
     </section >
   );
 }

@@ -55,7 +55,7 @@ export function Outreach() {
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 h-full flex flex-col justify-end pb-12 sm:pb-16 pt-32">
           <Reveal className="max-w-3xl">
-            <SectionLabel>Outreach</SectionLabel>
+            {/* <SectionLabel>Outreach</SectionLabel> */}
             <h2 className="mt-5 font-display font-black text-4xl sm:text-5xl lg:text-7xl leading-[1.02] text-white">
               Success Must Produce{" "}
               <span className="text-gradient">Contribution</span>.

@@ -46,7 +46,7 @@ export function Campus() {
         <img src={campusCandidImg} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover ken-burns" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-deep via-ink-deep/40 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 mx-auto max-w-7xl px-4 sm:px-6 pb-10 sm:pb-14">
-          <SectionLabel>Campus Chapters</SectionLabel>
+          {/* <SectionLabel>Campus Chapters</SectionLabel> */}
           <div className="mt-4 text-xs tracking-[0.4em] uppercase text-blue-glow font-semibold">
             The College Success Engine
           </div>
