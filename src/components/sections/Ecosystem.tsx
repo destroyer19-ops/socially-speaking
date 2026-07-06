@@ -1,18 +1,26 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, ArrowUpRight, Mic, Users, GraduationCap, HeartHandshake } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpRight,
+  Mic,
+  Users,
+  GraduationCap,
+  HeartHandshake,
+} from "lucide-react";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/Reveal";
 import { SectionLabel } from "@/components/SectionLabel";
 import { SectionDivider } from "@/components/SectionDivider";
 import { ImageMarquee } from "@/components/ImageMarquee";
-import crowdImg from "@/assets/crowd-cheering.jpg";
-import panelImg from "@/assets/panel-stage.jpg";
-import campusImg from "@/assets/campus.jpg";
-import campusCandidImg from "@/assets/campus-candid.jpg";
-import tribeImg from "@/assets/tribe.jpg";
-import outreachImg from "@/assets/outreach.jpg";
-import speakerImg from "@/assets/speaker.jpg";
-import foodDriveImg from "@/assets/food-drive.jpg";
+import crowdImg from "@/assets/ssc10.JPG";
+import panelImg from "@/assets/ssc1.jpg";
+import campusImg from "@/assets/A6946819-B421-40DA-94D8-362CF0AF3B8F.jpg";
+import campusCandidImg from "@/assets/ssc2.jpg";
+import tribeImg from "@/assets/ssc4.JPG";
+import outreachImg from "@/assets/IMG_7848.JPG";
+import speakerImg from "@/assets/ssc7.JPG";
+import foodDriveImg from "@/assets/ssc8.JPG";
 import logoImg from "@/assets/logo.PNG";
 
 const nodes = [
@@ -90,7 +98,16 @@ export function Ecosystem() {
           className={isPaused ? "[&_*]:![animation-play-state:paused]" : ""}
         >
           <ImageMarquee
-            images={[crowdImg, panelImg, campusImg, outreachImg, tribeImg, speakerImg, campusCandidImg, foodDriveImg]}
+            images={[
+              crowdImg,
+              panelImg,
+              campusImg,
+              outreachImg,
+              tribeImg,
+              speakerImg,
+              campusCandidImg,
+              foodDriveImg,
+            ]}
             height="h-[180px] sm:h-[220px]"
             speed="marquee-slow"
           />
@@ -101,7 +118,9 @@ export function Ecosystem() {
 
         <button
           type="button"
-          onClick={function () { nudge("prev"); }}
+          onClick={function () {
+            nudge("prev");
+          }}
           aria-label="Scroll images left"
           className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-full glass-strong text-white opacity-0 group-hover/marquee:opacity-100 focus-visible:opacity-100 transition-opacity hover:scale-105 active:scale-95"
         >
@@ -109,7 +128,9 @@ export function Ecosystem() {
         </button>
         <button
           type="button"
-          onClick={function () { nudge("next"); }}
+          onClick={function () {
+            nudge("next");
+          }}
           aria-label="Scroll images right"
           className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-full glass-strong text-white opacity-0 group-hover/marquee:opacity-100 focus-visible:opacity-100 transition-opacity hover:scale-105 active:scale-95"
         >
@@ -121,8 +142,7 @@ export function Ecosystem() {
         <Reveal className="text-center max-w-2xl mx-auto">
           <SectionLabel>The Ecosystem</SectionLabel>
           <h2 className="mt-5 font-display font-black text-4xl sm:text-5xl lg:text-6xl">
-            The Socially Speaking{" "}
-            <span className="text-gradient">Ecosystem</span>
+            The Socially Speaking <span className="text-gradient">Ecosystem</span>
           </h2>
           <p className="mt-5 text-foreground-muted">
             One movement. Four pillars, working together to build a generation of leaders.
@@ -173,19 +193,15 @@ export function Ecosystem() {
                       aria-hidden
                     />
                   </div>
-                  <h3 className="mt-5 font-display font-black text-lg leading-tight">
-                    {n.label}
-                  </h3>
-                  <p className="mt-2 text-sm text-white/60 leading-relaxed">
-                    {n.description}
-                  </p>
+                  <h3 className="mt-5 font-display font-black text-lg leading-tight">{n.label}</h3>
+                  <p className="mt-2 text-sm text-white/60 leading-relaxed">{n.description}</p>
                 </a>
               </StaggerItem>
             );
           })}
         </StaggerGroup>
-      </div >
+      </div>
       {/* <SectionDivider to="ink-warm" variant="slope" /> */}
-    </section >
+    </section>
   );
 }

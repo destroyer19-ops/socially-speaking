@@ -1,19 +1,59 @@
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/Reveal";
 import {
-  Brain, Sprout, Rocket, Handshake, Heart,
-  MessageCircle, Video, Swords, Coffee, Gamepad2, Users2, TrendingUp, Network,
+  Brain,
+  Sprout,
+  Rocket,
+  Handshake,
+  Heart,
+  MessageCircle,
+  Video,
+  Swords,
+  Coffee,
+  Gamepad2,
+  Users2,
+  TrendingUp,
+  Network,
 } from "lucide-react";
 import { SectionDivider } from "@/components/SectionDivider";
-import tribeImg from "@/assets/tribe.jpg";
-import campusCandidImg from "@/assets/campus-candid.jpg";
-import portraitImg from "@/assets/portrait-leader.jpg";
+import tribeImg from "@/assets/ssc7.JPG";
+import campusCandidImg from "@/assets/ssc8.JPG";
+import dpImg from "@/assets/dp01.jpg";
+import portraitImg from "@/assets/ssc9.JPG";
+import { SectionLabel } from "@/components/SectionLabel";
+import { VideoBackdrop } from "@/components/VideoBackdrop";
+import { ArrowRight } from "lucide-react";
 
 const pillars = [
-  { icon: Brain, color: "#6a189a", title: "Think Better", body: "Critical thinking, psychology, society, culture, current affairs." },
-  { icon: Sprout, color: "#1f7bb6", title: "Grow Better", body: "Faith, character, discipline, emotional intelligence, personal growth." },
-  { icon: Rocket, color: "#56a0ff", title: "Build Better", body: "Career growth, business, entrepreneurship, money and skills." },
-  { icon: Handshake, color: "#9d4edd", title: "Connect Better", body: "Relationships, networking, communication and collaboration." },
-  { icon: Heart, color: "#f22f22", title: "Serve Better", body: "Leadership, volunteering, social impact and nation building." },
+  {
+    icon: Brain,
+    color: "#6a189a",
+    title: "Think Better",
+    body: "Critical thinking, psychology, society, culture, current affairs.",
+  },
+  {
+    icon: Sprout,
+    color: "#1f7bb6",
+    title: "Grow Better",
+    body: "Faith, character, discipline, emotional intelligence, personal growth.",
+  },
+  {
+    icon: Rocket,
+    color: "#56a0ff",
+    title: "Build Better",
+    body: "Career growth, business, entrepreneurship, money and skills.",
+  },
+  {
+    icon: Handshake,
+    color: "#9d4edd",
+    title: "Connect Better",
+    body: "Relationships, networking, communication and collaboration.",
+  },
+  {
+    icon: Heart,
+    color: "#f22f22",
+    title: "Serve Better",
+    body: "Leadership, volunteering, social impact and nation building.",
+  },
 ];
 
 const activitiesRow1 = [
@@ -36,9 +76,7 @@ const row2Loop = [...activitiesRow2, ...activitiesRow2, ...activitiesRow2];
 
 function ActivityChip({ icon: Icon, label, color }) {
   return (
-    <span
-      className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full glass-light text-sm text-white whitespace-nowrap shrink-0"
-    >
+    <span className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full glass-light text-sm text-white whitespace-nowrap shrink-0">
       <span
         className="grid h-7 w-7 place-items-center rounded-full"
         style={{ backgroundColor: color + "33" }}
@@ -52,7 +90,10 @@ function ActivityChip({ icon: Icon, label, color }) {
 
 export function Tribe() {
   return (
-    <section id="tribe" className="relative overflow-hidden bg-gradient-to-b from-white via-[#f6f3fb] to-white text-on-paper">
+    <section
+      id="tribe"
+      className="relative overflow-hidden bg-gradient-to-b from-white via-[#f6f3fb] to-white text-on-paper"
+    >
       {/* Ambient blue/purple wash */}
       <div
         aria-hidden
@@ -75,9 +116,8 @@ export function Tribe() {
               Your <span className="text-gradient-dark">Growth Ecosystem</span>.
             </h2>
             <p className="mt-6 text-on-paper text-lg leading-relaxed">
-              The Socially Speaking Tribe is a community for young Africans
-              committed to becoming the standard and the difference they want to
-              see in the world.
+              The Socially Speaking Tribe is a community for young Africans committed to becoming
+              the standard and the difference they want to see in the world.
             </p>
             <p className="mt-3 text-on-paper text-lg leading-relaxed">
               Everything we do revolves around five pillars:
@@ -87,23 +127,47 @@ export function Tribe() {
           <Reveal delay={0.1} className="h-[420px] sm:h-[480px]">
             <div className="grid h-full grid-cols-2 grid-rows-2 gap-4">
               <div className="row-span-2 rounded-3xl overflow-hidden shadow-[var(--shadow-card-light)]">
-                <img src={tribeImg} alt="Members of The Tribe community" loading="lazy" className="h-full w-full object-cover" />
+                <img
+                  src={tribeImg}
+                  alt="Members of The Tribe community"
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
               </div>
               <div className="rounded-3xl overflow-hidden shadow-[var(--shadow-card-light)]">
-                <img src={portraitImg} alt="Young African leader" loading="lazy" className="h-full w-full object-cover" />
+                <img
+                  src={portraitImg}
+                  alt="Young African leader"
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
               </div>
               <div className="rounded-3xl overflow-hidden shadow-[var(--shadow-card-light)]">
-                <img src={campusCandidImg} alt="Friends on campus" loading="lazy" className="h-full w-full object-cover" />
+                <img
+                  src={campusCandidImg}
+                  alt="Friends on campus"
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
               </div>
             </div>
           </Reveal>
         </div>
 
-        <StaggerGroup className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <StaggerGroup className="mt-16 align-center grid gap-5 sm:grid-cols-2 lg:grid-cols-12 max-w-6xl mx-auto">
           {pillars.map(function (p, i) {
             const Icon = p.icon;
             return (
-              <StaggerItem key={p.title}>
+              <StaggerItem
+                key={p.title}
+                className={
+                  i < 3
+                    ? "col-span-12 md:col-span-6 lg:col-span-4"
+                    : i === 3
+                      ? "col-span-12 md:col-span-6 lg:col-span-4 lg:col-start-3"
+                      : "col-span-12 md:col-span-6 lg:col-span-4 lg:col-start-7"
+                }
+              >
                 <div className="group relative h-full bg-white rounded-3xl p-7 hover-lift shadow-[var(--shadow-card-light)] ring-1 ring-black/5">
                   <div className="flex items-center gap-3">
                     <span
@@ -124,7 +188,39 @@ export function Tribe() {
             );
           })}
         </StaggerGroup>
-
+        <Reveal className="mt-20">
+          <div className="relative overflow-hidden rounded-[2rem] min-h-[420px]">
+            <img
+              src={tribeImg}
+              alt="Join the tribe"
+              aria-hidden
+              loading="lazy"
+              className="absolute inset-0 h-full w-full object-cover ken-burns"
+            />
+            <div className="absolute inset-0 bg-[radial-gradient(60%_80%_at_20%_20%,rgba(106,24,154,0.7),transparent),linear-gradient(to_right,rgba(6,9,26,0.95),rgba(6,9,26,0.3))]" />
+            <div className="relative grid lg:grid-cols-[1.4fr_1fr] gap-8 items-center p-10 sm:p-14">
+              <div>
+                <div className="chip">Join The Tribe</div>
+                <h3 className="mt-4 font-display font-black text-4xl sm:text-5xl text-white">
+                  Become part of the <span className="text-gradient">Movement</span>
+                </h3>
+                <p className="mt-4 text-foreground-muted text-lg max-w-xl">
+                  Connect with ambitious young leaders who are committed to growth, impact, and
+                  excellence. Hold each other to a higher standard.
+                </p>
+              </div>
+              <div className="flex lg:justify-end">
+                <a href="#join" className="btn-primary group">
+                  Join The Tribe
+                  <ArrowRight
+                    size={16}
+                    className="transition-transform group-hover:translate-x-1"
+                  />
+                </a>
+              </div>
+            </div>
+          </div>
+        </Reveal>
         {/* Community Activities — dual-row marquee instead of a flat tag list */}
         <Reveal className="mt-16">
           <div className="relative overflow-hidden bg-ink-deep text-white rounded-3xl py-10 sm:py-12">

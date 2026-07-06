@@ -1,13 +1,13 @@
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/Reveal";
 import { SectionDivider } from "@/components/SectionDivider";
-import crowdImg from "@/assets/crowd-cheering.jpg";
-import panelImg from "@/assets/panel-stage.jpg";
-import campusImg from "@/assets/campus.jpg";
-import campusCandidImg from "@/assets/campus-candid.jpg";
-import tribeImg from "@/assets/tribe.jpg";
-import outreachImg from "@/assets/outreach.jpg";
-import speakerImg from "@/assets/speaker.jpg";
-import foodDriveImg from "@/assets/food-drive.jpg";
+import crowdImg from "@/assets/tl01.jpg";
+import panelImg from "@/assets/ssc2.jpg";
+import campusImg from "@/assets/tl10.jpg";
+import campusCandidImg from "@/assets/tl09.jpg";
+import tribeImg from "@/assets/tl02.jpg";
+import outreachImg from "@/assets/tl08.jpg";
+import speakerImg from "@/assets/tl04.jpg";
+import foodDriveImg from "@/assets/ssc9.JPG";
 
 const timeline = [
   { year: "2024", title: "Socially Speaking Conference Launch.", image: crowdImg },
@@ -57,7 +57,7 @@ export function Journey() {
                     </span>
 
                     <div className={isLeft ? "sm:col-start-1 sm:pr-8" : "sm:col-start-2 sm:pl-8"}>
-                      <div className="group relative overflow-hidden rounded-2xl hover-lift shadow-[var(--shadow-card-light)] ring-1 ring-black/5 h-40 sm:h-44">
+                      <div className="group relative overflow-hidden rounded-2xl hover-lift shadow-[var(--shadow-card-light)] ring-1 ring-black/5 h-64 sm:h-80">
                         <img
                           src={t.image}
                           alt=""

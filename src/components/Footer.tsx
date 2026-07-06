@@ -15,6 +15,11 @@ const links = [
 
 const socials = [
   { icon: Instagram, label: "Instagram", href: "https://instagram.com" },
+  {
+    icon: Instagram,
+    label: "The Takeover Network",
+    href: "https://instagram.com/thetakeovernetwork",
+  },
   { icon: Linkedin, label: "LinkedIn", href: "https://linkedin.com" },
   { icon: Youtube, label: "YouTube", href: "https://youtube.com" },
   { icon: Mail, label: "Email Contact", href: "mailto:ssc.outreach@gmail.com" },
@@ -31,15 +36,15 @@ export function Footer() {
               <img
                 src={logoImg}
                 alt="Socially Speaking Logo"
-                className="h-11 w-11 object-contain rounded-full shadow-glow"
+                className="h-22 w-22 object-contain"
               />
-              <span className="font-display font-black text-2xl">
+              {/* <span className="font-display font-black text-2xl">
                 Socially Speaking<span className="text-blue-glow">.</span>
-              </span>
+              </span> */}
             </Link>
             <p className="mt-5 text-foreground-muted max-w-md leading-relaxed">
-              Building Africa's next generation of thinkers, leaders and
-              changemakers. We build. We equip. We develop.
+              Building Africa's next generation of thinkers, leaders and changemakers. We build. We
+              equip. We develop.
             </p>
             <div className="mt-7 flex items-center gap-3">
               {socials.map((s) => {
@@ -65,7 +70,10 @@ export function Footer() {
             <ul className="space-y-2.5">
               {links.map((l) => (
                 <li key={l.to}>
-                  <Link to={l.to} className="text-foreground-muted hover:text-foreground transition-colors">
+                  <Link
+                    to={l.to}
+                    className="text-foreground-muted hover:text-foreground transition-colors"
+                  >
                     {l.label}
                   </Link>
                 </li>
@@ -80,7 +88,10 @@ export function Footer() {
             <ul className="space-y-2.5">
               {socials.map((s) => (
                 <li key={s.label}>
-                  <a href={s.href} className="text-foreground-muted hover:text-foreground transition-colors">
+                  <a
+                    href={s.href}
+                    className="text-foreground-muted hover:text-foreground transition-colors"
+                  >
                     {s.label}
                   </a>
                 </li>

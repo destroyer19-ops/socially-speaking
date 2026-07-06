@@ -4,7 +4,7 @@ import { Reveal, StaggerGroup, StaggerItem } from "@/components/Reveal";
 import { Hammer, Zap, Rocket } from "lucide-react";
 import { SectionDivider } from "@/components/SectionDivider";
 import portraitImg from "@/assets/portrait-leader.jpg";
-import campusCandidImg from "@/assets/IMG_4373-scaled.jpg";
+import campusCandidImg from "@/assets/food-drive3.jpg";
 import speakerImg from "@/assets/LHI07982-scaled.jpg";
 import tribeImg from "@/assets/LHI09017.jpg";
 
@@ -40,7 +40,10 @@ export function WhoWeAre() {
   const yTribe = useTransform(scrollYProgress, [0, 1], [-18, 18]);
 
   return (
-    <section id="who" className="relative overflow-hidden bg-gradient-to-b from-white via-[#f6f3fb] to-white text-on-paper">
+    <section
+      id="who"
+      className="relative overflow-hidden bg-gradient-to-b from-white via-[#f6f3fb] to-white text-on-paper"
+    >
       {/* Visible ambient wash — blue/purple bleeding across a light base */}
       <div
         aria-hidden
@@ -99,7 +102,7 @@ export function WhoWeAre() {
 
               {/* Bottom right — split into speaker + tribe side by side */}
               <div className="grid grid-cols-1 gap-2 sm:gap-4">
-                {/* <motion.div
+                <motion.div
                   style={{ y: ySpeaker }}
                   className="rounded-xl overflow-hidden shadow-[var(--shadow-card-light)] will-change-transform"
                 >
@@ -109,7 +112,7 @@ export function WhoWeAre() {
                     loading="lazy"
                     className="h-full w-full object-cover"
                   />
-                </motion.div> */}
+                </motion.div>
                 <motion.div
                   style={{ y: yTribe }}
                   className="rounded-xl overflow-hidden shadow-[var(--shadow-card-light)] will-change-transform"
@@ -154,27 +157,43 @@ export function WhoWeAre() {
               </h2>
             </Reveal>
 
-            <Reveal delay={0.1} className="mt-7 space-y-5 text-on-paper text-lg leading-relaxed text-justify">
+            <Reveal
+              delay={0.1}
+              className="mt-7 space-y-5 text-on-paper text-lg leading-relaxed text-justify"
+            >
               <p className="text-justify">
-                Socially Speaking exists to build, equip, and develop a new
-                generation of excellent, audacious, and resilient young leaders
-                who invest in the quality of their personalities in order to
-                stand out, be the standard, and be the difference they want to
-                see.
+                Socially Speaking exists to build, equip, and develop a new generation of excellent,
+                audacious, and resilient young leaders who invest in the quality of their
+                personalities in order to stand out, be the standard, and be the difference they
+                want to see.
               </p>
               <p className="text-ink-deep font-medium">
                 We believe success is more than personal achievement.
               </p>
-              <ul className="space-y-3 border-l-2 border-purple/60 pl-5">
-                <li className="[text-align:justify]">Success is impacting your world with the investment of your personality.</li>
-                <li className="[text-align:justify]">Success is influencing the world around you to think better, aspire higher, and be excellent.</li>
-                <li className="[text-align:justify]">Success is making the world around you better than how you met it.</li>
+              <ul className="space-y-4">
+                <li className="flex items-start text-justify">
+                  <span className="mr-3 mt-2 flex h-2 w-2 shrink-0 rounded-full bg-purple/80"></span>
+                  <span>
+                    Success is impacting your world with the investment of your personality.
+                  </span>
+                </li>
+                <li className="flex items-start text-justify">
+                  <span className="mr-3 mt-2 flex h-2 w-2 shrink-0 rounded-full bg-purple/80"></span>
+                  <span>
+                    Success is influencing the world around you to think better, aspire higher, and
+                    be excellent.
+                  </span>
+                </li>
+                <li className="flex items-start text-justify">
+                  <span className="mr-3 mt-2 flex h-2 w-2 shrink-0 rounded-full bg-purple/80"></span>
+                  <span>Success is making the world around you better than how you met it.</span>
+                </li>
               </ul>
               <p className="text-ink-deep font-semibold">That is why Socially Speaking exists.</p>
               <p className="[text-align:justify]">
-                We are building a generation of young Africans who think
-                critically, grow intentionally, build valuable skills, form
-                meaningful relationships, and create lasting impact.
+                We are building a generation of young Africans who think critically, grow
+                intentionally, build valuable skills, form meaningful relationships, and create
+                lasting impact.
               </p>
             </Reveal>
           </div>

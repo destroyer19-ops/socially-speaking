@@ -27,6 +27,6 @@ export default {
       title: 'Icon Name',
       type: 'string',
       description: 'Name of the Lucide icon to use (e.g., "Users", "Globe")',
-    }
-  ]
-};
+    },
+  ],
+}

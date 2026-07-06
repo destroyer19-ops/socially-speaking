@@ -9,18 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VolunteerRouteImport } from './routes/volunteer'
 import { Route as TribeRouteImport } from './routes/tribe'
+import { Route as TakeoverTableRouteImport } from './routes/takeover-table'
 import { Route as OutreachRouteImport } from './routes/outreach'
 import { Route as MediaRouteImport } from './routes/media'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as ImpactRouteImport } from './routes/impact'
+import { Route as FirstClassFormulaRouteImport } from './routes/first-class-formula'
+import { Route as ConferenceRegisterRouteImport } from './routes/conference-register'
 import { Route as ConferenceRouteImport } from './routes/conference'
+import { Route as CampusRegisterRouteImport } from './routes/campus-register'
 import { Route as CampusRouteImport } from './routes/campus'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
+const VolunteerRoute = VolunteerRouteImport.update({
+  id: '/volunteer',
+  path: '/volunteer',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TribeRoute = TribeRouteImport.update({
   id: '/tribe',
   path: '/tribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TakeoverTableRoute = TakeoverTableRouteImport.update({
+  id: '/takeover-table',
+  path: '/takeover-table',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OutreachRoute = OutreachRouteImport.update({
@@ -43,14 +59,34 @@ const ImpactRoute = ImpactRouteImport.update({
   path: '/impact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FirstClassFormulaRoute = FirstClassFormulaRouteImport.update({
+  id: '/first-class-formula',
+  path: '/first-class-formula',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConferenceRegisterRoute = ConferenceRegisterRouteImport.update({
+  id: '/conference-register',
+  path: '/conference-register',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConferenceRoute = ConferenceRouteImport.update({
   id: '/conference',
   path: '/conference',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CampusRegisterRoute = CampusRegisterRouteImport.update({
+  id: '/campus-register',
+  path: '/campus-register',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CampusRoute = CampusRouteImport.update({
   id: '/campus',
   path: '/campus',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -61,86 +97,142 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/campus': typeof CampusRoute
+  '/campus-register': typeof CampusRegisterRoute
   '/conference': typeof ConferenceRoute
+  '/conference-register': typeof ConferenceRegisterRoute
+  '/first-class-formula': typeof FirstClassFormulaRoute
   '/impact': typeof ImpactRoute
   '/join': typeof JoinRoute
   '/media': typeof MediaRoute
   '/outreach': typeof OutreachRoute
+  '/takeover-table': typeof TakeoverTableRoute
   '/tribe': typeof TribeRoute
+  '/volunteer': typeof VolunteerRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/campus': typeof CampusRoute
+  '/campus-register': typeof CampusRegisterRoute
   '/conference': typeof ConferenceRoute
+  '/conference-register': typeof ConferenceRegisterRoute
+  '/first-class-formula': typeof FirstClassFormulaRoute
   '/impact': typeof ImpactRoute
   '/join': typeof JoinRoute
   '/media': typeof MediaRoute
   '/outreach': typeof OutreachRoute
+  '/takeover-table': typeof TakeoverTableRoute
   '/tribe': typeof TribeRoute
+  '/volunteer': typeof VolunteerRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/campus': typeof CampusRoute
+  '/campus-register': typeof CampusRegisterRoute
   '/conference': typeof ConferenceRoute
+  '/conference-register': typeof ConferenceRegisterRoute
+  '/first-class-formula': typeof FirstClassFormulaRoute
   '/impact': typeof ImpactRoute
   '/join': typeof JoinRoute
   '/media': typeof MediaRoute
   '/outreach': typeof OutreachRoute
+  '/takeover-table': typeof TakeoverTableRoute
   '/tribe': typeof TribeRoute
+  '/volunteer': typeof VolunteerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/campus'
+    | '/campus-register'
     | '/conference'
+    | '/conference-register'
+    | '/first-class-formula'
     | '/impact'
     | '/join'
     | '/media'
     | '/outreach'
+    | '/takeover-table'
     | '/tribe'
+    | '/volunteer'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/campus'
+    | '/campus-register'
     | '/conference'
+    | '/conference-register'
+    | '/first-class-formula'
     | '/impact'
     | '/join'
     | '/media'
     | '/outreach'
+    | '/takeover-table'
     | '/tribe'
+    | '/volunteer'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/campus'
+    | '/campus-register'
     | '/conference'
+    | '/conference-register'
+    | '/first-class-formula'
     | '/impact'
     | '/join'
     | '/media'
     | '/outreach'
+    | '/takeover-table'
     | '/tribe'
+    | '/volunteer'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   CampusRoute: typeof CampusRoute
+  CampusRegisterRoute: typeof CampusRegisterRoute
   ConferenceRoute: typeof ConferenceRoute
+  ConferenceRegisterRoute: typeof ConferenceRegisterRoute
+  FirstClassFormulaRoute: typeof FirstClassFormulaRoute
   ImpactRoute: typeof ImpactRoute
   JoinRoute: typeof JoinRoute
   MediaRoute: typeof MediaRoute
   OutreachRoute: typeof OutreachRoute
+  TakeoverTableRoute: typeof TakeoverTableRoute
   TribeRoute: typeof TribeRoute
+  VolunteerRoute: typeof VolunteerRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/volunteer': {
+      id: '/volunteer'
+      path: '/volunteer'
+      fullPath: '/volunteer'
+      preLoaderRoute: typeof VolunteerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tribe': {
       id: '/tribe'
       path: '/tribe'
       fullPath: '/tribe'
       preLoaderRoute: typeof TribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/takeover-table': {
+      id: '/takeover-table'
+      path: '/takeover-table'
+      fullPath: '/takeover-table'
+      preLoaderRoute: typeof TakeoverTableRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/outreach': {
@@ -171,6 +263,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ImpactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/first-class-formula': {
+      id: '/first-class-formula'
+      path: '/first-class-formula'
+      fullPath: '/first-class-formula'
+      preLoaderRoute: typeof FirstClassFormulaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/conference-register': {
+      id: '/conference-register'
+      path: '/conference-register'
+      fullPath: '/conference-register'
+      preLoaderRoute: typeof ConferenceRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/conference': {
       id: '/conference'
       path: '/conference'
@@ -178,11 +284,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConferenceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/campus-register': {
+      id: '/campus-register'
+      path: '/campus-register'
+      fullPath: '/campus-register'
+      preLoaderRoute: typeof CampusRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/campus': {
       id: '/campus'
       path: '/campus'
       fullPath: '/campus'
       preLoaderRoute: typeof CampusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -197,24 +317,20 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   CampusRoute: CampusRoute,
+  CampusRegisterRoute: CampusRegisterRoute,
   ConferenceRoute: ConferenceRoute,
+  ConferenceRegisterRoute: ConferenceRegisterRoute,
+  FirstClassFormulaRoute: FirstClassFormulaRoute,
   ImpactRoute: ImpactRoute,
   JoinRoute: JoinRoute,
   MediaRoute: MediaRoute,
   OutreachRoute: OutreachRoute,
+  TakeoverTableRoute: TakeoverTableRoute,
   TribeRoute: TribeRoute,
+  VolunteerRoute: VolunteerRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

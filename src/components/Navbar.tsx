@@ -45,7 +45,7 @@ export function Navbar() {
             <img
               src={logoImg}
               alt="Socially Speaking Logo"
-              className="h-12 w-12 object-contain rounded-full shadow-glow"
+              className="h-auto w-30 object-contain  shadow-glow"
             />
           </Link>
 

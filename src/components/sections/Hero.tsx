@@ -1,27 +1,25 @@
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { ArrowRight, Sparkles, Play, X } from "lucide-react";
-import crowdImg from "@/assets/crowd-cheering.jpg";
-import speakerImg from "@/assets/panel-stage.jpg";
-import tribeImg from "@/assets/tribe.jpg";
-import outreachImg from "@/assets/food-drive.jpg";
-import campusImg from "@/assets/volunteers.jpg";
-import exchangeImg from "@/assets/hero-conference.jpg";
-import sscVid from "@/assets/videos/01.mp4";
+import crowdImg from "@/assets/hero00.jpg";
+import speakerImg from "@/assets/hero02.jpg";
+import takeoverCrowdImg from "@/assets/generated/takeover-crowd.jpg";
+import takeoverStageImg from "@/assets/generated/takeover-stage.jpg";
+import campusImg from "@/assets/hero01.jpg";
+import exchangeImg from "@/assets/outreach20.jpg";
 
 // Rotating hero backdrop — swap, reorder, or trim this list freely.
 const SLIDES = [
   { src: crowdImg, alt: "Socially Speaking conference crowd cheering" },
   { src: speakerImg, alt: "A speaker addressing the SSC audience" },
-  { src: tribeImg, alt: "Members of The Tribe community" },
-  { src: outreachImg, alt: "SSC community outreach in action" },
   { src: campusImg, alt: "A university campus chapter gathering" },
   { src: exchangeImg, alt: "An SSC exchange program moment" },
 ];
 const SLIDE_DURATION_MS = 5500;
 
-// Replace with the real reel — an .mp4 path or a YouTube/Vimeo embed URL.
-const REEL_VIDEO_SRC = sscVid;
+function loadReelVideo() {
+  return import("@/assets/videos/01.mp4").then((mod) => mod.default);
+}
 
 export function Hero() {
   const ref = useRef<HTMLDivElement>(null);
@@ -35,6 +33,7 @@ export function Hero() {
 
   const [slideIndex, setSlideIndex] = useState(0);
   const [isReelOpen, setIsReelOpen] = useState(false);
+  const [reelVideoSrc, setReelVideoSrc] = useState<string | null>(null);
 
   // Auto-advance the backdrop slideshow, pausing while the lightbox is open.
   useEffect(() => {
@@ -46,6 +45,12 @@ export function Hero() {
   }, [isReelOpen]);
 
   const closeReel = useCallback(() => setIsReelOpen(false), []);
+  const openReel = useCallback(() => {
+    setIsReelOpen(true);
+    if (!reelVideoSrc) {
+      loadReelVideo().then(setReelVideoSrc);
+    }
+  }, [reelVideoSrc]);
 
   // Lock scroll + support Escape while the lightbox is open.
   useEffect(() => {
@@ -63,11 +68,7 @@ export function Hero() {
   }, [isReelOpen, closeReel]);
 
   return (
-    <section
-      id="top"
-      ref={ref}
-      className="relative min-h-[100svh] overflow-hidden bg-ink"
-    >
+    <section id="top" ref={ref} className="relative min-h-[100svh] overflow-hidden bg-ink">
       {/* Full-bleed rotating backdrop */}
       <motion.div className="absolute inset-0" style={{ y, scale }}>
         <AnimatePresence initial={false}>
@@ -101,16 +102,15 @@ export function Hero() {
             onClick={() => setSlideIndex(i)}
             aria-label={`Show slide ${i + 1} of ${SLIDES.length}`}
             aria-current={i === slideIndex}
-            className={`h-1.5 rounded-full transition-all duration-300 ${i === slideIndex
-              ? "w-6 bg-white"
-              : "w-1.5 bg-white/40 hover:bg-white/70"
-              }`}
+            className={`h-1.5 rounded-full transition-all duration-300 ${
+              i === slideIndex ? "w-6 bg-white" : "w-1.5 bg-white/40 hover:bg-white/70"
+            }`}
           />
         ))}
       </div>
 
       {/* PLAY REEL badge — opens the video lightbox */}
-      <motion.button
+      {/* <motion.button
         type="button"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -122,7 +122,7 @@ export function Hero() {
           <Play size={12} fill="currentColor" />
         </span>
         Watch the reel
-      </motion.button>
+      </motion.button> */}
 
       {/* Live dot */}
       {/* <motion.div
@@ -146,9 +146,8 @@ export function Hero() {
           transition={{ duration: 0.6 }}
           className="flex items-center gap-2"
         >
-          <span className="chip">
-            Be the Standard!
-            {/* A Movement, Not a Page */}
+          <span className="chip text-sm sm:text-base px-4 py-2">
+            Be the Standard. Be the difference you want to see
           </span>
         </motion.div>
 
@@ -187,16 +186,16 @@ export function Hero() {
           </motion.span>
         </h1>
 
-        <div className="mt-8 grid sm:grid-cols-[1fr_auto] gap-8 items-end">
+        <div className="mt-8 flex flex-col gap-8 items-start">
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.5 }}
             className="max-w-xl text-justify [text-align-last:left] text-base sm:text-lg text-foreground-muted leading-relaxed"
           >
-            Through conferences, university chapters, community programs, and
-            social impact initiatives, we are raising young people who become
-            the standard and the difference they want to see.
+            Through conferences, university chapters, community programs, and social impact
+            initiatives, we are raising young people who are the standard and the difference they
+            want to see.
           </motion.p>
 
           <motion.div
@@ -207,10 +206,7 @@ export function Hero() {
           >
             <a href="#join" className="btn-primary group">
               Join The Tribe
-              <ArrowRight
-                size={16}
-                className="transition-transform group-hover:translate-x-1"
-              />
+              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </a>
             <a href="#campus" className="btn-ghost">
               Explore Campus Chapters
@@ -225,7 +221,7 @@ export function Hero() {
           className="mt-10 flex items-center gap-6 text-xs text-foreground-subtle"
         >
           <div className="flex -space-x-2">
-            {[tribeImg, campusImg, outreachImg, exchangeImg, speakerImg].map(
+            {[campusImg, exchangeImg, speakerImg].map(
               (src, i) => (
                 <img
                   key={i}
@@ -234,13 +230,11 @@ export function Hero() {
                   loading="lazy"
                   className="h-9 w-9 rounded-full border-2 border-ink-deep object-cover"
                 />
-              )
+              ),
             )}
           </div>
           <div>
-            <div className="font-semibold text-foreground text-sm">
-              1,000+ young leaders
-            </div>
+            <div className="font-semibold text-foreground text-sm">1,000+ young leaders</div>
             <div>already building the standard.</div>
           </div>
         </motion.div>

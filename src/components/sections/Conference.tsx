@@ -9,11 +9,13 @@ import { SectionLabel } from "@/components/SectionLabel";
 import { SectionDivider } from "@/components/SectionDivider";
 import { VideoBackdrop } from "@/components/VideoBackdrop";
 import { Mic, MessageSquare, Users, Gift, ArrowRight, Play, X } from "lucide-react";
-import crowdImg from "@/assets/crowd-cheering.jpg";
-import panelImg from "@/assets/panel-stage.jpg";
-import speakerImg from "@/assets/speaker.jpg";
-import flatlayImg from "@/assets/conference-flatlay.jpg";
-import tribeImg from "@/assets/tribe.jpg";
+import crowdImg from "@/assets/ssc10.JPG";
+import crowdImgEx from "@/assets/takeover.jpg";
+import panelImg from "@/assets/ssc1.jpg";
+import speakerImg from "@/assets/ssc2.jpg";
+import takeoverImg from "@/assets/takeover2.jpg";
+import flatlayImg from "@/assets/ssc-wealth.jpg";
+import tribeImg from "@/assets/ssc4.JPG";
 
 const journey = [
   {
@@ -21,7 +23,7 @@ const journey = [
     title: "Mastering the Art of Personal Excellence",
     body: "Our inaugural conference focused on helping young people develop the mindset, habits, discipline, character, and personal leadership required for success.",
     themes: ["Personal Excellence", "Discipline", "Leadership", "Growth", "Purpose"],
-    image: crowdImg,
+    image: speakerImg,
     video: "/videos/conference-2024-recap.mp4",
   },
   {
@@ -29,7 +31,7 @@ const journey = [
     title: "The Takeover Conference — Power Moves Only",
     body: "The second edition challenged young people to move beyond potential and begin taking ownership of the spaces, industries, communities, and systems around them. The focus was raising a generation prepared to lead, influence culture, and create meaningful change.",
     themes: ["Leadership", "Influence", "Innovation", "Industry Impact", "Nation Building"],
-    image: panelImg,
+    image: takeoverImg,
     video: "/videos/conference-2025-recap.mp4",
   },
 ];
@@ -37,18 +39,38 @@ const journey = [
 // NOTE: swap these `video` paths for your real conference footage.
 // Leave `video: null` on any card without a clip — its play button won't render.
 const happens = [
-  { icon: Mic, title: "Keynote Sessions", body: "Learn from accomplished leaders, innovators, entrepreneurs, and change makers.", video: "/videos/keynote-sessions.mp4" },
-  { icon: MessageSquare, title: "Panel Conversations", body: "Real discussions about careers, leadership, business, faith, media, family, and society.", video: "/videos/panel-conversations.mp4" },
-  { icon: Users, title: "Networking", body: "Meaningful connections with ambitious young people and industry leaders.", video: "/videos/networking.mp4" },
-  { icon: Gift, title: "Empowerment Opportunities", body: "Scholarships, resources, mentorship opportunities, and growth support.", video: null },
+  {
+    icon: Mic,
+    title: "Keynote Sessions",
+    body: "Learn from accomplished leaders, innovators, entrepreneurs, and change makers.",
+    video: "/videos/keynote-sessions.mp4",
+  },
+  {
+    icon: MessageSquare,
+    title: "Panel Conversations",
+    body: "Real discussions about careers, leadership, business, faith, media, family, and society.",
+    video: "/videos/panel-conversations.mp4",
+  },
+  {
+    icon: Users,
+    title: "Networking",
+    body: "Meaningful connections with ambitious young people and industry leaders.",
+    video: "/videos/networking.mp4",
+  },
+  {
+    icon: Gift,
+    title: "Empowerment Opportunities",
+    body: "Scholarships, resources, mentorship opportunities, and growth support.",
+    video: null,
+  },
 ];
 
 // Duplicated for a seamless continuous loop with enough slides to fill the buffer.
 const happensLoop = [...happens, ...happens, ...happens];
 
 const photoStrip = [
-  { image: speakerImg, caption: "Keynote on the main stage" },
-  { image: flatlayImg, caption: "Conference essentials" },
+  { image: panelImg, caption: "Keynote speakers on stage" },
+  { image: flatlayImg, caption: "Convener" },
   { image: crowdImg, caption: "The crowd, fully present" },
 ];
 
@@ -69,16 +91,19 @@ export function Conference() {
     };
   }, []);
 
-  useEffect(function () {
-    if (activeVideo) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return function () {
-      document.body.style.overflow = "";
-    };
-  }, [activeVideo]);
+  useEffect(
+    function () {
+      if (activeVideo) {
+        document.body.style.overflow = "hidden";
+      } else {
+        document.body.style.overflow = "";
+      }
+      return function () {
+        document.body.style.overflow = "";
+      };
+    },
+    [activeVideo],
+  );
 
   function goToCard(index) {
     setActiveDot(index);
@@ -88,14 +113,14 @@ export function Conference() {
   }
 
   return (
-    <section id="conference" className="relative bg-ink-warm overflow-hidden">
+    <section id="conference" className="relative bg-ink-deep overflow-hidden">
       {/* Full-bleed cinematic intro */}
       <VideoBackdrop
-        poster={crowdImg}
+        poster={crowdImgEx}
         rounded={false}
         height="min-h-[60svh]"
         overlay="purple"
-      // badge="Conference 2025 highlights"
+        // badge="Conference 2025 highlights"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 h-full flex items-end pb-12 sm:pb-16 pt-32">
           <Reveal className="max-w-3xl">
@@ -112,16 +137,14 @@ export function Conference() {
         <Reveal className="max-w-3xl">
           <div className="space-y-4 text-foreground-muted text-lg leading-relaxed">
             <p>
-              The Socially Speaking Conference is our flagship annual leadership
-              and personal development conference, bringing together ambitious
-              young people to learn, grow, connect, and prepare for meaningful
-              impact.
+              The Socially Speaking Conference is our flagship annual leadership and personal
+              development conference, bringing together ambitious young people to learn, grow,
+              connect, and prepare for meaningful impact.
             </p>
             <p>
-              Through keynote sessions, panel discussions, workshops, networking
-              opportunities, and empowerment initiatives, the conference
-              challenges young people to pursue excellence, think bigger, and
-              become the standard in every area of life.
+              Through keynote sessions, panel discussions, workshops, networking opportunities, and
+              empowerment initiatives, the conference challenges young people to pursue excellence,
+              think bigger, and become the standard in every area of life.
             </p>
           </div>
         </Reveal>
@@ -138,7 +161,11 @@ export function Conference() {
             return (
               <Reveal key={j.year + "-" + i} delay={i * 0.08}>
                 <div className="grid lg:grid-cols-2 gap-0 items-stretch overflow-hidden rounded-3xl">
-                  <div className={"relative min-h-[360px] lg:min-h-[520px] group" + (i % 2 ? " lg:order-2" : "")}>
+                  <div
+                    className={
+                      "relative min-h-[360px] lg:min-h-[520px] group" + (i % 2 ? " lg:order-2" : "")
+                    }
+                  >
                     <img
                       src={j.image}
                       alt={j.title}
@@ -152,7 +179,9 @@ export function Conference() {
                     {j.video && (
                       <button
                         type="button"
-                        onClick={function () { setActiveVideo({ video: j.video, title: j.title }); }}
+                        onClick={function () {
+                          setActiveVideo({ video: j.video, title: j.title });
+                        }}
                         aria-label={"Play recap video for " + j.title}
                         className="absolute top-6 right-6 grid h-12 w-12 place-items-center rounded-full glass-strong text-white opacity-90 hover:scale-110 transition-transform"
                       >
@@ -192,26 +221,26 @@ export function Conference() {
           })}
         </div>
 
-        {/* Editorial photo strip */}
+        {/* Editorial photo strip — no captions */}
         <Reveal className="mt-16">
-          <div className="grid sm:grid-cols-3 gap-3 h-[200px] sm:h-[280px]">
-            {photoStrip.map(function (p, i) {
-              return (
-                <div key={i} className="group relative rounded-2xl overflow-hidden">
-                  <img
-                    src={p.image}
-                    alt=""
-                    aria-hidden
-                    loading="lazy"
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink-deep/80 via-ink-deep/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute bottom-4 left-4 right-4 text-sm text-white opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                    {p.caption}
-                  </div>
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {photoStrip.map((p, i) => (
+              <div
+                key={i}
+                className={`
+          group relative overflow-hidden rounded-2xl
+          ${i === 0 ? "h-72 sm:h-[280px]" : "h-52 sm:h-[280px]"}
+        `}
+              >
+                <img
+                  src={p.image}
+                  alt={p.caption}
+                  loading="lazy"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              </div>
+            ))}
           </div>
         </Reveal>
 
@@ -226,7 +255,9 @@ export function Conference() {
           <div className="conference-marquee">
             <Swiper
               modules={[FreeMode, Autoplay]}
-              onSwiper={function (swiper) { swiperRef.current = swiper; }}
+              onSwiper={function (swiper) {
+                swiperRef.current = swiper;
+              }}
               slidesPerView="auto"
               spaceBetween={20}
               loop
@@ -280,7 +311,9 @@ export function Conference() {
                 <button
                   key={h.title}
                   type="button"
-                  onClick={function () { goToCard(i); }}
+                  onClick={function () {
+                    goToCard(i);
+                  }}
                   aria-label={"Jump to " + h.title}
                   aria-current={isActive}
                   className={
@@ -295,27 +328,66 @@ export function Conference() {
           </div>
         </StaggerGroup>
 
-        {/* Next destination — full-bleed image */}
+        {/* SSC 2026 — dominant registration panel */}
         <Reveal className="mt-20">
-          <div className="relative overflow-hidden rounded-[2rem] min-h-[420px]">
-            <img src={tribeImg} alt="" aria-hidden loading="lazy" className="absolute inset-0 h-full w-full object-cover ken-burns" />
-            <div className="absolute inset-0 bg-[radial-gradient(60%_80%_at_20%_20%,rgba(106,24,154,0.7),transparent),linear-gradient(to_right,rgba(6,9,26,0.95),rgba(6,9,26,0.3))]" />
-            <div className="relative grid lg:grid-cols-[1.4fr_1fr] gap-8 items-center p-10 sm:p-14">
-              <div>
-                <div className="chip">Next Destination</div>
-                <h3 className="mt-4 font-display font-black text-4xl sm:text-5xl">
-                  Socially Speaking <span className="text-gradient">Conference 2026</span>
-                </h3>
-                <p className="mt-4 text-foreground-muted text-lg max-w-xl">
-                  Building the next generation of excellent, audacious, and
-                  resilient young leaders.
-                </p>
-              </div>
-              <div className="flex lg:justify-end">
-                <a href="#join" className="btn-primary group">
-                  Join The Waiting List
-                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-                </a>
+          <div className="relative overflow-hidden rounded-[2rem] min-h-[520px]">
+            <img
+              src={tribeImg}
+              alt=""
+              aria-hidden
+              loading="lazy"
+              className="absolute inset-0 h-full w-full object-cover ken-burns"
+            />
+            <div className="absolute inset-0 bg-[radial-gradient(60%_80%_at_20%_20%,rgba(106,24,154,0.7),transparent),linear-gradient(to_right,rgba(6,9,26,0.97),rgba(6,9,26,0.5))]" />
+            <div className="relative p-10 sm:p-16 lg:p-20">
+              <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-10">
+                <div className="max-w-2xl">
+                  <div className="chip">Next Chapter</div>
+                  {/* Giant year display */}
+                  <div
+                    className="mt-4 font-display font-black leading-none text-gradient"
+                    style={{ fontSize: "clamp(5rem, 18vw, 14rem)" }}
+                  >
+                    2026
+                  </div>
+                  <h3 className="mt-2 font-display font-black text-3xl sm:text-4xl text-white">
+                    The Takeover Generation
+                  </h3>
+                  <p className="mt-3 text-foreground-muted text-xl font-semibold">
+                    Saturday, December 5, 2026
+                  </p>
+                  <p className="mt-4 text-foreground-muted text-lg leading-relaxed">
+                    The next chapter is here. Socially Speaking Conference returns, bringing
+                    together a new generation of young people for another defining experience of
+                    learning, conversations, connection, and growth.
+                  </p>
+                  <div className="mt-6 space-y-2 text-foreground-muted">
+                    {[
+                      "Powerful keynote sessions",
+                      "Honest, relevant conversations",
+                      "Panel sessions",
+                      "Real stories and experiences",
+                      "Practical learning",
+                      "Networking and meaningful connections",
+                      "Opportunities for growth and impact",
+                    ].map((item) => (
+                      <div key={item} className="flex items-center gap-3 text-sm">
+                        <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-purple to-blue-glow shrink-0" />
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-4 items-start lg:items-end shrink-0">
+                  <p className="text-white/70 text-sm">Registration is now open.</p>
+                  <a href="/conference-register" className="btn-primary group text-base px-8 py-4">
+                    Register for SSC 2026
+                    <ArrowRight
+                      size={18}
+                      className="transition-transform group-hover:translate-x-1"
+                    />
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -331,11 +403,15 @@ export function Conference() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 sm:p-8"
-            onClick={function () { setActiveVideo(null); }}
+            onClick={function () {
+              setActiveVideo(null);
+            }}
           >
             <button
               type="button"
-              onClick={function () { setActiveVideo(null); }}
+              onClick={function () {
+                setActiveVideo(null);
+              }}
               aria-label="Close video"
               className="absolute top-4 right-4 sm:top-6 sm:right-6 grid h-11 w-11 place-items-center rounded-full glass-strong text-white hover:scale-105 transition-transform"
             >
@@ -348,7 +424,9 @@ export function Conference() {
               exit={{ scale: 0.96, opacity: 0 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
               className="relative w-full max-w-4xl aspect-video rounded-2xl overflow-hidden bg-black shadow-2xl"
-              onClick={function (e) { e.stopPropagation(); }}
+              onClick={function (e) {
+                e.stopPropagation();
+              }}
             >
               <video
                 key={activeVideo.video}
@@ -361,7 +439,9 @@ export function Conference() {
 
             <div
               className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center text-white/70 text-sm"
-              onClick={function (e) { e.stopPropagation(); }}
+              onClick={function (e) {
+                e.stopPropagation();
+              }}
             >
               {activeVideo.title}
             </div>

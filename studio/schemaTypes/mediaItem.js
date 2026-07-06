@@ -15,8 +15,8 @@ export default {
       type: 'string',
       options: {
         list: [
-          { title: 'Image', value: 'image' },
-          { title: 'Video', value: 'video' },
+          {title: 'Image', value: 'image'},
+          {title: 'Video', value: 'video'},
         ],
       },
       validation: (Rule) => Rule.required(),
@@ -27,11 +27,11 @@ export default {
       type: 'string',
       options: {
         list: [
-          { title: 'Conferences', value: 'Conferences' },
-          { title: 'Campus Chapters', value: 'Campus Chapters' },
-          { title: 'Outreach', value: 'Outreach' },
-          { title: 'The Exchange', value: 'The Exchange' },
-          { title: 'Community Activities', value: 'Community Activities' },
+          {title: 'Conferences', value: 'Conferences'},
+          {title: 'Campus Chapters', value: 'Campus Chapters'},
+          {title: 'Outreach', value: 'Outreach'},
+          {title: 'The Exchange', value: 'The Exchange'},
+          {title: 'Community Activities', value: 'Community Activities'},
         ],
       },
       validation: (Rule) => Rule.required(),
@@ -40,7 +40,7 @@ export default {
       name: 'image',
       title: 'Image File',
       type: 'image',
-      hidden: ({ document }) => document?.type !== 'image',
+      hidden: ({document}) => document?.type !== 'image',
       options: {
         hotspot: true,
       },
@@ -57,14 +57,14 @@ export default {
       name: 'videoUrl',
       title: 'Video URL',
       type: 'url',
-      hidden: ({ document }) => document?.type !== 'video',
+      hidden: ({document}) => document?.type !== 'video',
       description: 'URL to the video (YouTube, Vimeo, or MP4)',
     },
     {
       name: 'thumbnail',
       title: 'Video Thumbnail',
       type: 'image',
-      hidden: ({ document }) => document?.type !== 'video',
+      hidden: ({document}) => document?.type !== 'video',
     },
     {
       name: 'featured',
@@ -87,4 +87,4 @@ export default {
       media: 'image',
     },
   },
-};
+}

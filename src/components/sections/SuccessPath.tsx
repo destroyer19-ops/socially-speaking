@@ -1,28 +1,28 @@
 import { Reveal } from "@/components/Reveal";
 import { Brain, Sprout, Rocket, Handshake, Heart, Sparkles } from "lucide-react";
 import { SectionDivider } from "@/components/SectionDivider";
-import crowdImg from "@/assets/crowd-cheering.jpg";
-import panelImg from "@/assets/panel-stage.jpg";
-import campusImg from "@/assets/campus.jpg";
-import campusCandidImg from "@/assets/campus-candid.jpg";
-import tribeImg from "@/assets/tribe.jpg";
-import outreachImg from "@/assets/outreach.jpg";
+import crowdImg from "@/assets/volunteers-impact.jpg";
+import thinkImg from "@/assets/think.jpg";
+import campusImg from "@/assets/BCBBCE61-E624-469D-9174-3470F7702633.jpg";
+import buildOthersImg from "@/assets/build-others.jpg";
+import tribeImg from "@/assets/ssc10.JPG";
+import outreachImg from "@/assets/borngreat.jpg";
 
 const steps = [
-  { label: "Think Better", icon: Brain, color: "#6a189a", image: panelImg },
+  { label: "Think Better", icon: Brain, color: "#6a189a", image: thinkImg },
   { label: "Grow Better", icon: Sprout, color: "#1f7bb6", image: campusImg },
-  { label: "Build Better", icon: Rocket, color: "#56a0ff", image: campusCandidImg },
+  { label: "Build Better", icon: Rocket, color: "#56a0ff", image: buildOthersImg },
   { label: "Connect Better", icon: Handshake, color: "#9d4edd", image: tribeImg },
   { label: "Serve Better", icon: Heart, color: "#f22f22", image: outreachImg },
   { label: "Impact", icon: Sparkles, color: "#ffb703", image: crowdImg },
 ];
 
-const lines = [
-  "The better you think, the better you grow.",
-  "The better you grow, the better you build.",
-  "The better you build, the better you connect.",
-  "The better you connect, the better you serve.",
-  "The better you serve, the greater your impact.",
+const chainLines = [
+  { before: "The better you think, the better you", word: "grow" },
+  { before: "The better you grow, the better you", word: "build" },
+  { before: "The better you build, the better you", word: "connect" },
+  { before: "The better you connect, the better you", word: "serve" },
+  { before: "The better you serve, the greater your", word: "impact" },
 ];
 
 // Duplicated once for a seamless CSS-driven infinite loop.
@@ -30,7 +30,7 @@ const marqueeSteps = [...steps, ...steps];
 
 export function SuccessPath() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-white via-[#f6f3fb] to-white text-on-paper">
+    <section className="relative overflow-hidden bg-gradient-to-b from-white via-[#f6f3fb] to-[#06040f] text-on-paper">
       {/* Ambient blue/purple wash, consistent with the rest of the site */}
       <div
         aria-hidden
@@ -45,7 +45,7 @@ export function SuccessPath() {
         className="pointer-events-none absolute bottom-[-20%] right-[-4%] h-[420px] w-[420px] rounded-full bg-blue-glow/20 blur-[130px]"
       />
 
-      <div className="relative py-24 sm:py-32">
+      <div className="relative pt-24 sm:pt-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <Reveal className="max-w-2xl">
             <div className="chip-dark">The Success Path</div>
@@ -113,18 +113,104 @@ export function SuccessPath() {
           <div className="pointer-events-none absolute inset-y-0 right-0 w-14 sm:w-24 bg-gradient-to-l from-[#f6f3fb] to-transparent" />
         </Reveal>
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <Reveal className="mt-20 max-w-3xl mx-auto text-center">
-            <div className="space-y-2 text-lg sm:text-xl text-on-paper">
-              {lines.map(function (l) {
-                return <p key={l}>{l}</p>;
-              })}
+        {/* ── Cinematic chain quote ── */}
+        <Reveal delay={0.15} className="mt-24 relative">
+          <div className="relative bg-gradient-to-b from-[#06040f] via-[#0e0521] to-[#06040f] py-20 sm:py-28 overflow-hidden">
+            {/* Ambient glow orbs */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute top-10 left-1/4 w-[500px] h-[500px] rounded-full bg-purple/10 blur-[140px]"
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute bottom-10 right-1/4 w-[400px] h-[400px] rounded-full bg-blue-glow/10 blur-[130px]"
+            />
+
+            <div className="relative mx-auto max-w-3xl px-6 sm:px-12">
+              {/* Chain statements */}
+              <div className="relative pl-8 sm:pl-12">
+                {/* Vertical glow thread */}
+                <div
+                  aria-hidden
+                  className="absolute left-0 top-2 bottom-2 w-px"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, transparent, #9d4edd 15%, #56a0ff 85%, transparent)",
+                  }}
+                />
+
+                {chainLines.map((line, i) => (
+                  <div key={i} className="relative mb-10 sm:mb-12 last:mb-0">
+                    {/* Pulse node on the thread */}
+                    <span
+                      aria-hidden
+                      className="absolute -left-[calc(2rem+0.5px)] sm:-left-[calc(3rem+0.5px)] top-[0.6em] flex h-2.5 w-2.5 -translate-x-1/2 items-center justify-center rounded-full ring-4 ring-[#0e0521]"
+                      style={{ background: "linear-gradient(135deg, #9d4edd, #56a0ff)" }}
+                    />
+                    <p
+                      className="m-0 text-2xl sm:text-3xl md:text-4xl font-semibold leading-snug text-justify"
+                      style={{ color: "rgba(255,255,255,0.72)" }}
+                    >
+                      {line.before}{" "}
+                      <span
+                        className="font-black"
+                        style={{
+                          background: "linear-gradient(90deg, #c77dff, #56a0ff)",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                        }}
+                      >
+                        {line.word}.
+                      </span>
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Divider */}
+              <div className="mt-16 sm:mt-20 flex items-center gap-5">
+                <div
+                  className="h-px flex-1"
+                  style={{
+                    background: "linear-gradient(to right, transparent, rgba(157,78,221,0.4))",
+                  }}
+                />
+                <span
+                  className="text-[10px] tracking-[0.35em] uppercase font-bold"
+                  style={{ color: "rgba(255,255,255,0.25)" }}
+                >
+                  impact
+                </span>
+                <div
+                  className="h-px flex-1"
+                  style={{
+                    background: "linear-gradient(to left, transparent, rgba(86,160,255,0.4))",
+                  }}
+                />
+              </div>
+
+              {/* Conclusion */}
+              <div className="mt-10 sm:mt-12 text-center">
+                <p
+                  className="m-0 font-display font-black leading-[1.05] text-white"
+                  style={{ fontSize: "clamp(2.5rem, 6vw, 5rem)" }}
+                >
+                  And impact is{" "}
+                  <span
+                    style={{
+                      background: "linear-gradient(90deg, #c77dff 0%, #a78bfa 40%, #56a0ff 100%)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                    }}
+                  >
+                    success
+                  </span>
+                  .
+                </p>
+              </div>
             </div>
-            <p className="mt-8 font-display font-black text-3xl sm:text-4xl text-ink-deep">
-              And impact is <span className="text-gradient-dark">success</span>.
-            </p>
-          </Reveal>
-        </div>
+          </div>
+        </Reveal>
       </div>
 
       <style>{`
@@ -137,7 +223,7 @@ export function SuccessPath() {
         }
       `}</style>
 
-      <SectionDivider to="ink" variant="curve" />
+      {/* <SectionDivider to="ink" variant="curve" /> */}
     </section>
   );
 }

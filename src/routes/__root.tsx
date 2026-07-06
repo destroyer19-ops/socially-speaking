@@ -1,13 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  Outlet,
-  Link,
-  createRootRouteWithContext,
-  useRouter,
-  HeadContent,
-  Scripts,
-} from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { Outlet, Link, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 import "@fontsource/sora/400.css";
 import "@fontsource/sora/600.css";
@@ -16,7 +9,6 @@ import "@fontsource/sora/800.css";
 
 import "@fontsource-variable/inter/index.css";
 
-import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -80,53 +72,10 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Socially Speaking — Africa's Next Generation Movement" },
-      {
-        name: "description",
-        content:
-          "Building Africa's next generation of thinkers, leaders and changemakers through conferences, university chapters, community programs and outreach.",
-      },
-      { name: "theme-color", content: "#06091a" },
-      { property: "og:title", content: "Socially Speaking — Africa's Next Generation Movement" },
-      { name: "twitter:title", content: "Socially Speaking — Africa's Next Generation Movement" },
-      { name: "description", content: "Socially Speaking Hub is a dynamic platform for youth leadership development and community engagement." },
-      { property: "og:description", content: "Socially Speaking Hub is a dynamic platform for youth leadership development and community engagement." },
-      { name: "twitter:description", content: "Socially Speaking Hub is a dynamic platform for youth leadership development and community engagement." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/3b2isYRenbdTxVCwgHa6YQmYyuk2/social-images/social-1782539856030-logo_(2).webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/3b2isYRenbdTxVCwgHa6YQmYyuk2/social-images/social-1782539856030-logo_(2).webp" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:type", content: "website" },
-    ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-    ],
-  }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
-
-function RootShell({ children }: { children: ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
