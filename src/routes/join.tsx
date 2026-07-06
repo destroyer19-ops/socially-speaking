@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { JoinUs as JoinUsSection } from "@/components/sections/JoinUs";
+import { JoinForm } from "@/components/sections/JoinForm";
 
 export const Route = createFileRoute("/join")({
   component: JoinPage,
@@ -20,7 +20,9 @@ function JoinPage() {
                 Become part of a movement dedicated to building Africa's next generation.
             </p>
         </div>
-        <JoinUsSection />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <JoinForm />
+        </div>
       </div>
       <Footer />
     </main>
