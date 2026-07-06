@@ -14,7 +14,7 @@ export function VideoBackdrop({
   poster,
   videoSrc,
   overlay = "dark",
-  badge = "Play the reel",
+  badge = "Play the Reel",
   children,
   className = "",
   rounded = true,
@@ -64,7 +64,7 @@ export function VideoBackdrop({
       )}
       <div className={`absolute inset-0 ${overlayClass}`} />
 
-      {badge !== null && (
+      {/* {badge !== null && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -77,7 +77,7 @@ export function VideoBackdrop({
           </span>
           {badge}
         </motion.div>
-      )}
+      )} */}
 
       <div className="relative h-full">{children}</div>
     </div>

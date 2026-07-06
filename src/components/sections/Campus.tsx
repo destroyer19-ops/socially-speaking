@@ -174,7 +174,7 @@ export function Campus() {
           </div>
         </Reveal>
       </div>
-      <SectionDivider to="ink-warm" variant="slope" flip />
+      {/* <SectionDivider to="ink-warm" variant="slope" flip /> */}
     </section>
   );
 }
