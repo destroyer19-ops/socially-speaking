@@ -26,14 +26,6 @@ const pillars = [
   },
 ];
 
-// The four photos that make up the collage, largest/most important first.
-const collage = [
-  { src: portraitImg, alt: "Young African leader" },
-  { src: campusCandidImg, alt: "Friends on campus" },
-  { src: tribeImg, alt: "Members of The Tribe community" },
-  { src: speakerImg, alt: "A speaker addressing the audience" },
-];
-
 export function WhoWeAre() {
   const collageRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -41,42 +33,48 @@ export function WhoWeAre() {
     offset: ["start end", "end start"],
   });
 
-  // Each tile drifts at a slightly different rate/direction for depth.
-  const yPortrait = useTransform(scrollYProgress, [0, 1], [22, -22]);
-  const yCampus = useTransform(scrollYProgress, [0, 1], [-16, 16]);
-  const ySpeaker = useTransform(scrollYProgress, [0, 1], [34, -34]);
-  const yTribe = useTransform(scrollYProgress, [0, 1], [-26, 26]);
-  const rotateBadge = useTransform(scrollYProgress, [0, 1], [-3, 3]);
+  // Subtle parallax drift for each tile
+  const yPortrait = useTransform(scrollYProgress, [0, 1], [16, -16]);
+  const yCampus = useTransform(scrollYProgress, [0, 1], [-14, 14]);
+  const ySpeaker = useTransform(scrollYProgress, [0, 1], [12, -12]);
+  const yTribe = useTransform(scrollYProgress, [0, 1], [-18, 18]);
 
   return (
-    <section id="who" className="relative overflow-hidden bg-paper text-on-paper">
-      {/* Light ambient wash — purple/blue bleeding into ash-white */}
+    <section id="who" className="relative overflow-hidden bg-gradient-to-b from-white via-[#f6f3fb] to-white text-on-paper">
+      {/* Visible ambient wash — blue/purple bleeding across a light base */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-purple/[0.05] via-paper to-blue-glow/[0.07]"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-purple/[0.14] via-transparent to-blue-glow/[0.16]"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-32 left-[12%] h-[420px] w-[420px] rounded-full bg-purple/10 blur-[110px]"
+        className="pointer-events-none absolute -top-40 left-[8%] h-[520px] w-[520px] rounded-full bg-purple/20 blur-[130px]"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute bottom-[-10%] right-0 h-[380px] w-[380px] rounded-full bg-blue-glow/10 blur-[110px]"
+        className="pointer-events-none absolute bottom-[-15%] right-[-5%] h-[480px] w-[480px] rounded-full bg-blue-glow/20 blur-[130px]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-1/3 right-1/4 h-[300px] w-[300px] rounded-full bg-purple/10 blur-[100px]"
       />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-24 sm:py-32">
         <div className="grid lg:grid-cols-[1fr_1.05fr] gap-12 lg:gap-16 items-center">
-          {/* Image collage */}
+          {/* Image collage — clean bento grid instead of overlapping tiles */}
           <Reveal className="relative h-[440px] sm:h-[540px] lg:h-[620px] order-2 lg:order-1">
-            <div ref={collageRef} className="relative h-full w-full">
-              {/* Large portrait — top-left anchor */}
+            <div
+              ref={collageRef}
+              className="relative grid h-full w-full grid-cols-2 grid-rows-2 gap-4 sm:gap-5"
+            >
+              {/* Portrait — tall, anchors the left column across both rows */}
               <motion.div
                 style={{ y: yPortrait }}
-                className="absolute top-0 left-0 h-[62%] w-[58%] rounded-3xl overflow-hidden shadow-[var(--shadow-card-light)] will-change-transform"
+                className="row-span-2 rounded-xl overflow-hidden shadow-[var(--shadow-card-light)] will-change-transform"
               >
                 <img
-                  src={collage[0].src}
-                  alt={collage[0].alt}
+                  src={portraitImg}
+                  alt="Young African leader"
                   loading="lazy"
                   className="h-full w-full object-cover"
                   width={1280}
@@ -84,14 +82,14 @@ export function WhoWeAre() {
                 />
               </motion.div>
 
-              {/* Campus candid — bottom-left, peeking under the portrait */}
+              {/* Campus candid — top right */}
               <motion.div
                 style={{ y: yCampus }}
-                className="absolute bottom-0 left-[4%] h-[42%] w-[46%] rounded-3xl overflow-hidden ring-4 ring-paper shadow-[var(--shadow-card-light)] will-change-transform"
+                className="rounded-xl overflow-hidden shadow-[var(--shadow-card-light)] will-change-transform"
               >
                 <img
-                  src={collage[1].src}
-                  alt={collage[1].alt}
+                  src={campusCandidImg}
+                  alt="Friends on campus"
                   loading="lazy"
                   className="h-full w-full object-cover"
                   width={1280}
@@ -99,38 +97,38 @@ export function WhoWeAre() {
                 />
               </motion.div>
 
-              {/* Speaker — floating square, top-right */}
-              <motion.div
-                style={{ y: ySpeaker }}
-                className="absolute top-[8%] right-0 h-[34%] w-[34%] rounded-2xl overflow-hidden ring-4 ring-paper shadow-[var(--shadow-card-light)] will-change-transform"
-              >
-                <img
-                  src={collage[3].src}
-                  alt={collage[3].alt}
-                  loading="lazy"
-                  className="h-full w-full object-cover"
-                />
-              </motion.div>
+              {/* Bottom right — split into speaker + tribe side by side */}
+              <div className="grid grid-cols-1 gap-2 sm:gap-4">
+                {/* <motion.div
+                  style={{ y: ySpeaker }}
+                  className="rounded-xl overflow-hidden shadow-[var(--shadow-card-light)] will-change-transform"
+                >
+                  <img
+                    src={speakerImg}
+                    alt="A speaker addressing the audience"
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                </motion.div> */}
+                <motion.div
+                  style={{ y: yTribe }}
+                  className="rounded-xl overflow-hidden shadow-[var(--shadow-card-light)] will-change-transform"
+                >
+                  <img
+                    src={tribeImg}
+                    alt="Members of The Tribe community"
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                    width={1280}
+                    height={1600}
+                  />
+                </motion.div>
+              </div>
 
-              {/* Tribe moment — bottom-right anchor */}
-              <motion.div
-                style={{ y: yTribe }}
-                className="absolute bottom-[6%] right-0 h-[46%] w-[42%] rounded-3xl overflow-hidden ring-4 ring-paper shadow-[var(--shadow-card-light)] will-change-transform"
-              >
-                <img
-                  src={collage[2].src}
-                  alt={collage[2].alt}
-                  loading="lazy"
-                  className="h-full w-full object-cover"
-                  width={1280}
-                  height={1600}
-                />
-              </motion.div>
-
-              {/* Stat badge — pinned to the top-right corner, tilts gently as you scroll */}
+              {/* Small floating accent badge, tucked over the grid seam */}
               {/* <motion.div
-                style={{ rotate: rotateBadge }}
-                className="absolute -top-4 -right-2 sm:-top-6 sm:-right-4 z-10 glass-paper rounded-2xl p-4 max-w-[170px] shadow-[var(--shadow-card-light)] will-change-transform"
+                style={{ y: yCampus }}
+                className="absolute -top-4 -right-3 sm:-top-5 sm:-right-4 z-10 glass-paper rounded-2xl p-4 max-w-[160px] shadow-[var(--shadow-card-light)] will-change-transform"
               >
                 <div className="text-[10px] tracking-[0.2em] uppercase text-on-paper-subtle">
                   The Movement

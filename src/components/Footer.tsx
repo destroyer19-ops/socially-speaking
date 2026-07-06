@@ -1,6 +1,8 @@
 import { Instagram, Linkedin, Youtube, Mail } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
+import logoImg from "@/assets/logo.PNG";
+
 const links = [
   { label: "Conference", to: "/conference" },
   { label: "The Tribe", to: "/tribe" },
@@ -26,9 +28,11 @@ export function Footer() {
         <div className="grid lg:grid-cols-[1.4fr_1fr_1fr] gap-12">
           <div>
             <Link to="/" className="inline-flex items-center gap-3">
-              <span className="grid h-11 w-11 place-items-center rounded-full bg-brand text-white font-display font-black shadow-glow">
-                SS
-              </span>
+              <img
+                src={logoImg}
+                alt="Socially Speaking Logo"
+                className="h-11 w-11 object-contain rounded-full shadow-glow"
+              />
               <span className="font-display font-black text-2xl">
                 Socially Speaking<span className="text-blue-glow">.</span>
               </span>

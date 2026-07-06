@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
+import logoImg from "@/assets/logo.PNG";
+
 const links = [
   { label: "Home", to: "/" },
   { label: "The Conference", to: "/conference" },
@@ -39,13 +41,12 @@ export function Navbar() {
             scrolled ? "glass-strong" : ""
           }`}
         >
-          <Link to="/" className="flex items-center gap-2.5 pl-2">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-brand text-white font-display font-black text-sm shadow-glow">
-              SS
-            </span>
-            <span className="font-display font-bold text-base tracking-tight">
-              Socially<span className="text-blue-glow">.</span>
-            </span>
+          <Link to="/" className="flex items-center pl-2">
+            <img
+              src={logoImg}
+              alt="Socially Speaking Logo"
+              className="h-12 w-12 object-contain rounded-full shadow-glow"
+            />
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1">

@@ -48,7 +48,7 @@ export function JoinUs() {
   }
 
   return (
-    <section id="join" className="relative bg-ink-deep overflow-hidden">
+    <section id="join" className="relative  overflow-hidden">
       {/* Full-bleed photographic backdrop */}
       <img src={crowdImg} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover ken-burns" />
       <div className="absolute inset-0 bg-[radial-gradient(60%_80%_at_30%_20%,rgba(106,24,154,0.65),transparent),linear-gradient(to_bottom,rgba(6,9,26,0.85),rgba(6,9,26,0.95))]" />
