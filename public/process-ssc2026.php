@@ -282,21 +282,25 @@ VALUES
     (?, NOW(), 'Pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
 if (!$stmt) {
+    $err = $conn->error; // capture BEFORE close() — reading $conn->error after close() is fatal
     $conn->rollback();
     $conn->close();
     ob_end_clean();
     http_response_code(500);
-    echo json_encode(['ok' => false, 'error' => 'Failed to prepare statement: ' . $conn->error]);
+    echo json_encode(['ok' => false, 'error' => 'Failed to prepare statement: ' . $err]);
     exit;
 }
 
+// Convert group_id to string — binding null as 'i' (int) causes TypeError in PHP 8
+$group_id_str = ($group_id !== null) ? (string)$group_id : null;
+
 $stmt->bind_param(
-    'ssssssssssssssssi',
+    'sssssssssssssssss',
     $reg_id,
     $full_name, $email, $phone, $whatsapp, $age_range, $gender,
     $state_country, $school_org, $occupation, $how_heard, $attended_before,
     $editions_attended, $hoping_to_gain, $qr_code_url, $raw_payload,
-    $group_id
+    $group_id_str
 );
 
 if (!$stmt->execute()) {
