@@ -163,26 +163,29 @@ $conn->query("CREATE TABLE IF NOT EXISTS `ssc_whatsapp_groups` (
 
 // Seed defaults if empty
 $count_res = $conn->query("SELECT COUNT(*) AS cnt FROM `ssc_whatsapp_groups`");
-if ($count_res && $count_res->fetch_assoc()['cnt'] == 0) {
-    $defaults = [
-        [1, 'SSC 2026 Attendees 01', 1000, 'https://chat.whatsapp.com/HuuOUNSbSnyG6Fbz32DeYJ'],
-        [2, 'SSC 2026 Attendees 02', 1000, 'https://chat.whatsapp.com/Ca7ZveBe2JX4QOXk4i1wHx'],
-        [3, 'SSC 2026 Attendees 03', 1000, 'https://chat.whatsapp.com/DM6bKrrnqXgGR8QFsmOhUF'],
-        [4, 'SSC 2026 Attendees 04', 1000, 'https://chat.whatsapp.com/C6CPDyEmLKC70YRuRjsxzM'],
-        [5, 'SSC 2026 Attendees 05', 1000, 'https://chat.whatsapp.com/Jt1bUMle06xHLnNrDljKeX'],
-    ];
-    $ins = $conn->prepare("INSERT INTO `ssc_whatsapp_groups` (sort_order, name, capacity, link) VALUES (?,?,?,?)");
-    if ($ins) {
-        foreach ($defaults as $d) {
-            $ins->bind_param('isis', $d[0], $d[1], $d[2], $d[3]);
-            $ins->execute();
+if ($count_res) {
+    $row = $count_res->fetch_assoc();
+    if ($row && $row['cnt'] == 0) {
+        $defaults = [
+            [1, 'SSC 2026 Attendees 01', 1000, 'https://chat.whatsapp.com/HuuOUNSbSnyG6Fbz32DeYJ'],
+            [2, 'SSC 2026 Attendees 02', 1000, 'https://chat.whatsapp.com/Ca7ZveBe2JX4QOXk4i1wHx'],
+            [3, 'SSC 2026 Attendees 03', 1000, 'https://chat.whatsapp.com/DM6bKrrnqXgGR8QFsmOhUF'],
+            [4, 'SSC 2026 Attendees 04', 1000, 'https://chat.whatsapp.com/C6CPDyEmLKC70YRuRjsxzM'],
+            [5, 'SSC 2026 Attendees 05', 1000, 'https://chat.whatsapp.com/Jt1bUMle06xHLnNrDljKeX'],
+        ];
+        $ins = $conn->prepare("INSERT INTO `ssc_whatsapp_groups` (sort_order, name, capacity, link) VALUES (?,?,?,?)");
+        if ($ins) {
+            foreach ($defaults as $d) {
+                $ins->bind_param('isis', $d[0], $d[1], $d[2], $d[3]);
+                $ins->execute();
+            }
+            $ins->close();
         }
-        $ins->close();
     }
 }
 
 $res_col = $conn->query("SHOW COLUMNS FROM `$table` LIKE 'whatsapp_group_id'");
-if ($res_col->num_rows === 0) {
+if ($res_col && $res_col->num_rows === 0) {
     $conn->query("ALTER TABLE `$table` ADD COLUMN whatsapp_group_id INT NULL");
 }
 
@@ -193,7 +196,7 @@ $dup = $conn->query("SELECT id, whatsapp_group_id FROM `$table` WHERE email = '$
 if ($dup && $dup->num_rows > 0) {
     $row = $dup->fetch_assoc();
     $group_link = null;
-    $existing_reg_id = $row['id'];
+    $existing_reg_id = $row['id'] ?? null;
     
     if (!empty($row['whatsapp_group_id'])) {
         $gid = (int)$row['whatsapp_group_id'];
@@ -202,7 +205,7 @@ if ($dup && $dup->num_rows > 0) {
             $gRow = $gRes->fetch_assoc();
             $group_link = $gRow['link'];
         }
-    } else {
+    } else if ($existing_reg_id) {
         // They are registered but have no group (e.g. registered before groups were set up)
         // Let's assign them one now.
         $conn->begin_transaction();
