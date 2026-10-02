@@ -10,9 +10,21 @@
  */
 
 ini_set('display_errors', 0);
-error_reporting(0);
+// Let the exception handler catch everything
+error_reporting(E_ALL);
 
 ob_start();
+
+set_exception_handler(function($e) {
+    ob_end_clean();
+    http_response_code(500);
+    echo json_encode(['ok' => false, 'error' => 'Fatal Error: ' . $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
+    exit;
+});
+set_error_handler(function($severity, $message, $file, $line) {
+    if (!(error_reporting() & $severity)) return;
+    throw new ErrorException($message, 0, $severity, $file, $line);
+});
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
