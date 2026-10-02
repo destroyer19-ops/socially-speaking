@@ -36,7 +36,9 @@ import { EmailPreview } from "@/components/admin/EmailPreview";
 import { CampaignConfirm } from "@/components/admin/CampaignConfirm";
 import { CampaignHistory } from "@/components/admin/CampaignHistory";
 import { QRScanner } from "@/components/admin/QRScanner";
-import { ScanLine } from "lucide-react";
+import { BlogManager } from "@/components/admin/BlogManager";
+import { WhatsAppGroupsManager } from "@/components/admin/WhatsAppGroupsManager";
+import { ScanLine, MessageSquare } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: AdminDashboard,
@@ -278,7 +280,7 @@ function EmailManager() {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "email" | "scanner">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "email" | "scanner" | "blog" | "whatsapp">("dashboard");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterFormType, setFilterFormType] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
@@ -389,322 +391,345 @@ function AdminDashboard() {
   };
 
   return (
-    <main className="relative flex min-h-screen flex-col bg-background">
-      <Navbar />
-      <div className="flex-1 pt-24 pb-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+    <div className="flex h-screen bg-[#0a0a0a] text-foreground font-sans overflow-hidden">
+      {/* ── Sidebar ── */}
+      <aside className="w-60 shrink-0 border-r border-white/5 bg-[#0a0a0a] hidden md:flex flex-col z-20">
+        <div className="px-6 py-7 border-b border-white/5">
+          <h1 className="font-display font-black text-xl text-white tracking-tight">
+            SSC <span className="text-purple-glow">26</span>
+          </h1>
+          <p className="text-[10px] uppercase tracking-widest text-foreground-subtle mt-1">Admin Portal</p>
+        </div>
 
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-brand mb-1">
-                Socially Speaking Conference
-              </p>
-              <h1 className="text-3xl md:text-4xl font-black font-display tracking-tight">
-                SSC 2026{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-glow to-blue-glow">
-                  Admin Dashboard
-                </span>
-              </h1>
-              <p className="text-foreground-muted mt-1 text-sm">
-                Live overview of registrations, volunteers and recruitment for{" "}
-                <strong className="text-white/70">The Takeover Generation · 5 Dec 2026</strong>
-              </p>
-            </div>
-            {activeTab === "dashboard" && (
-              <button
-                onClick={handleExportCSV}
-                disabled={loading || filteredData.length === 0}
-                className="btn-primary inline-flex items-center gap-2 whitespace-nowrap self-start md:self-auto disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Download size={18} />
-                Export CSV
-              </button>
-            )}
-          </div>
-
-          {/* ── Main Tab Navigation ── */}
-          <div className="flex gap-2 glass-strong rounded-2xl border border-white/5 p-1.5 mb-10 w-fit">
-            {([
-              { key: "dashboard", label: "Dashboard",     icon: <LayoutDashboard size={16} /> },
-              { key: "email",     label: "Email Manager", icon: <Mail size={16} /> },
-            ] as { key: "dashboard" | "email" | "scanner"; label: string; icon: React.ReactNode }[]).map((t) => (
-              <button
-                key={t.key}
-                onClick={() => setActiveTab(t.key)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                  activeTab === t.key
-                    ? "bg-purple/20 text-purple-glow border border-purple/30"
-                    : "text-foreground-muted hover:text-white"
-                }`}
-              >
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          {([
+            { key: "dashboard", label: "Overview",          icon: <LayoutDashboard size={16} /> },
+            { key: "email",     label: "Email Campaigns",   icon: <Mail size={16} /> },
+            { key: "scanner",   label: "QR Check-In",       icon: <ScanLine size={16} /> },
+            { key: "blog",      label: "Blog Manager",       icon: <PenTool size={16} /> },
+            { key: "whatsapp",  label: "WhatsApp Groups",    icon: <MessageSquare size={16} /> },
+          ] as { key: "dashboard" | "email" | "scanner" | "blog" | "whatsapp"; label: string; icon: React.ReactNode }[]).map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setActiveTab(t.key)}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                activeTab === t.key
+                  ? "bg-white/10 text-white"
+                  : "text-foreground-muted hover:bg-white/[0.04] hover:text-white"
+              }`}
+            >
+              <span className={activeTab === t.key ? "text-purple-400" : "text-foreground-subtle"}>
                 {t.icon}
-                {t.label}
-              </button>
-            ))}
+              </span>
+              {t.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="p-4 border-t border-white/5">
+          <div className="flex items-center gap-3 px-2 py-1.5">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple to-blue-glow flex items-center justify-center text-xs font-bold text-white shrink-0">
+              AD
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-white truncate">Administrator</p>
+              <p className="text-[10px] text-foreground-subtle truncate">SSC 2026</p>
+            </div>
           </div>
+        </div>
+      </aside>
 
-          {/* ── Scanner Tab ── */}
-          {activeTab === "scanner" && (
-            <div className="py-8">
-              <QRScanner />
-            </div>
-          )}
+      {/* ── Main Area ── */}
+      <main className="flex-1 flex flex-col min-h-0 bg-[#050505]">
+        {/* Mobile top bar */}
+        <header className="md:hidden flex items-center justify-between px-4 py-3 border-b border-white/5 bg-[#0a0a0a] shrink-0">
+          <h1 className="font-display font-bold text-lg text-white">
+            SSC <span className="text-purple-glow">26</span>
+          </h1>
+          <select
+            value={activeTab}
+            onChange={(e) => setActiveTab(e.target.value as "dashboard" | "email" | "scanner" | "blog" | "whatsapp")}
+            className="bg-transparent border border-white/10 text-white text-sm rounded-lg py-1.5 px-3 focus:outline-none"
+          >
+            <option value="dashboard">Overview</option>
+            <option value="email">Email Campaigns</option>
+            <option value="scanner">QR Check-In</option>
+            <option value="blog">Blog Manager</option>
+            <option value="whatsapp">WhatsApp Groups</option>
+          </select>
+        </header>
 
-          {/* ── Email Manager Tab ── */}
-          {activeTab === "email" && (
-            <EmailManager />
-          )}
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-10 py-8 lg:py-10">
 
-          {/* ── Dashboard Tab ── */}
-          {activeTab === "dashboard" && (
-          <>
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-32">
-              <Loader2 className="w-12 h-12 text-purple-glow animate-spin mb-4" />
-              <p className="text-foreground-muted">Loading dashboard data…</p>
-            </div>
-          ) : error ? (
-            <div className="p-6 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-center">
-              <p className="font-bold mb-2">Failed to load data</p>
-              <p className="text-sm">{error}</p>
-            </div>
-          ) : (
-            <>
-              {/* ── SSC 2026 Conference Registrations ── */}
-              <SectionHeading>SSC 2026 — Conference Registrations</SectionHeading>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-                <StatCard icon={<CalendarDays size={22} />} title="Total Registrations" value={confTotal} sub="SSC 2026" accent="blue" />
-                <StatCard icon={<CheckCircle size={22} />} title="Confirmed" value={confConfirmed} sub="Approved / Paid" accent="green" />
-                <StatCard icon={<Clock size={22} />} title="Pending" value={confPending} sub="Awaiting confirmation" accent="orange" />
-                <StatCard icon={<Users size={22} />} title="Other Forms" value={counts.campus + counts.ttb + counts.fcf + counts.tribe} sub="Campus, TTB, FCF, Tribe" accent="purple" />
+            {/* Per-tab page header */}
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-black font-display text-white tracking-tight">
+                  {activeTab === "dashboard" && "Overview"}
+                  {activeTab === "email"     && "Email Campaigns"}
+                  {activeTab === "scanner"   && "QR Check-In"}
+                  {activeTab === "blog"      && "Blog Manager"}
+                  {activeTab === "whatsapp"  && "WhatsApp Groups"}
+                </h2>
+                <p className="text-sm text-foreground-muted mt-1">
+                  {activeTab === "dashboard" && "Live registrations and recruitment — The Takeover Generation · 5 Dec 2026"}
+                  {activeTab === "email"     && "Compose and dispatch attendee broadcasts via Brevo"}
+                  {activeTab === "scanner"   && "Scan attendee QR codes to mark live check-ins"}
+                  {activeTab === "blog"      && "Manage and publish blog posts"}
+                  {activeTab === "whatsapp"  && "Manage attendee WhatsApp group capacity, links and assignments"}
+                </p>
               </div>
-
-              {/* ── Volunteer Recruitment ── */}
-              <SectionHeading>SSC 2026 — Volunteer Recruitment</SectionHeading>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
-                <StatCard icon={<Users size={22} />} title="Total Applications" value={volTotal} accent="pink" />
-                <StatCard icon={<Clock size={22} />} title="Pending" value={volPending} accent="orange" />
-                <StatCard icon={<Activity size={22} />} title="Under Review" value={volUnderReview} accent="blue" />
-                <StatCard icon={<Trophy size={22} />} title="Selected" value={volSelected} accent="green" />
-                <StatCard icon={<ListFilter size={22} />} title="Waitlisted" value={volWaitlisted} accent="yellow" />
-                <StatCard icon={<XCircle size={22} />} title="Not Selected" value={volStatus["Not Selected"] ?? 0} accent="purple" />
-              </div>
-
-              {/* ── Charts ── */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-                {/* Conference status pie */}
-                <div className="glass-strong rounded-2xl border border-white/5 p-6">
-                  <h3 className="text-base font-bold text-white mb-1">SSC 2026 Registration Status</h3>
-                  <p className="text-xs text-foreground-subtle mb-5">Breakdown of conference registrations</p>
-                  {confStatusChartData.length > 0 ? (
-                    <>
-                      <div className="h-[200px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie data={confStatusChartData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={4} dataKey="value">
-                              {confStatusChartData.map((_entry, i) => (
-                                <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                              ))}
-                            </Pie>
-                            <RechartsTooltip contentStyle={{ backgroundColor: "#0a0a0a", borderColor: "#333", borderRadius: "12px" }} itemStyle={{ color: "#fff" }} />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {confStatusChartData.map((d, i) => (
-                          <div key={d.name} className="flex items-center gap-1.5 text-xs text-foreground-muted">
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                            {d.name} ({d.value})
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  ) : (
-                    <p className="text-center text-foreground-subtle text-sm py-10">No conference registration data yet</p>
-                  )}
-                </div>
-
-                {/* Volunteer status pie */}
-                <div className="glass-strong rounded-2xl border border-white/5 p-6">
-                  <h3 className="text-base font-bold text-white mb-1">Volunteer Application Status</h3>
-                  <p className="text-xs text-foreground-subtle mb-5">Across all volunteer applications</p>
-                  {volStatusChartData.length > 0 ? (
-                    <>
-                      <div className="h-[200px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie data={volStatusChartData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={4} dataKey="value">
-                              {volStatusChartData.map((_entry, i) => (
-                                <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                              ))}
-                            </Pie>
-                            <RechartsTooltip contentStyle={{ backgroundColor: "#0a0a0a", borderColor: "#333", borderRadius: "12px" }} itemStyle={{ color: "#fff" }} />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {volStatusChartData.map((d, i) => (
-                          <div key={d.name} className="flex items-center gap-1.5 text-xs text-foreground-muted">
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                            {d.name} ({d.value})
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  ) : (
-                    <p className="text-center text-foreground-subtle text-sm py-10">No volunteer applications yet</p>
-                  )}
-                </div>
-
-                {/* Recent registrations mini list */}
-                <div className="glass-strong rounded-2xl border border-white/5 p-6">
-                  <h3 className="text-base font-bold text-white mb-1">Recent Activity</h3>
-                  <p className="text-xs text-foreground-subtle mb-5">Last 6 submissions across all forms</p>
-                  <div className="space-y-3">
-                    {registrations.slice(0, 6).map((r) => (
-                      <div key={r.id} className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-white shrink-0">
-                          {r.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-white truncate">{r.name}</p>
-                          <p className="text-[11px] text-foreground-subtle">{r.form_type} · {r.date}</p>
-                        </div>
-                        <span className={`ml-auto shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${statusColor(r.status)}`}>
-                          {r.status}
-                        </span>
-                      </div>
-                    ))}
-                    {registrations.length === 0 && (
-                      <p className="text-center text-foreground-subtle text-sm py-4">No submissions yet</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Volunteer Departments bar chart */}
-              {volDeptChartData.length > 0 && (
-                <div className="glass-strong rounded-2xl border border-white/5 p-6 mb-10">
-                  <h3 className="text-base font-bold text-white mb-1">Volunteer Applications by Department</h3>
-                  <p className="text-xs text-foreground-subtle mb-6">First-choice department selections (top 10)</p>
-                  <div className="h-[280px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={volDeptChartData} margin={{ top: 5, right: 10, left: -10, bottom: 60 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#1f1f1f" vertical={false} />
-                        <XAxis dataKey="name" stroke="#555" tick={{ fill: "#888", fontSize: 11 }} angle={-35} textAnchor="end" interval={0} />
-                        <YAxis stroke="#555" tick={{ fill: "#888", fontSize: 11 }} allowDecimals={false} />
-                        <RechartsTooltip contentStyle={{ backgroundColor: "#0a0a0a", borderColor: "#333", borderRadius: "12px" }} itemStyle={{ color: "#fff" }} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-                        <Bar dataKey="count" name="Applications" fill="#EC4899" radius={[4, 4, 0, 0]} maxBarSize={48} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
+              {activeTab === "dashboard" && (
+                <button
+                  onClick={handleExportCSV}
+                  disabled={loading || filteredData.length === 0}
+                  className="btn-primary inline-flex items-center gap-2 whitespace-nowrap shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Download size={15} />
+                  Export CSV
+                </button>
               )}
+            </div>
 
-              {/* ── All Records Table ── */}
-              <SectionHeading>All Submissions</SectionHeading>
-              <div className="glass-strong rounded-2xl border border-white/5 overflow-hidden">
-                {/* Table header / filters */}
-                <div className="p-5 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-white">All Registrations</h3>
-                    <p className="text-xs text-foreground-muted mt-0.5">
-                      Showing {filteredData.length} of {registrations.length} total
-                    </p>
+            {/* ── Scanner Tab ── */}
+            {activeTab === "scanner" && <QRScanner />}
+
+            {/* ── Email Tab ── */}
+            {activeTab === "email" && <EmailManager />}
+            {activeTab === "blog" && <BlogManager />}
+            {activeTab === "whatsapp" && <WhatsAppGroupsManager />}
+
+            {/* ── Dashboard Tab ── */}
+            {activeTab === "dashboard" && (
+              <>
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center py-32">
+                    <Loader2 className="w-12 h-12 text-purple-glow animate-spin mb-4" />
+                    <p className="text-foreground-muted">Loading dashboard data…</p>
                   </div>
-                  <div className="flex flex-col sm:flex-row flex-wrap gap-3 w-full md:w-auto">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" size={15} />
-                      <input
-                        type="text"
-                        placeholder="Search name, email, phone…"
-                        className="w-full sm:w-60 rounded-xl bg-white/5 border border-white/10 pl-9 pr-4 py-2 text-sm text-foreground focus:outline-none focus:border-purple-glow"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                      />
+                ) : error ? (
+                  <div className="p-6 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-center">
+                    <p className="font-bold mb-2">Failed to load data</p>
+                    <p className="text-sm">{error}</p>
+                  </div>
+                ) : (
+                  <>
+                    <SectionHeading>SSC 2026 — Conference Registrations</SectionHeading>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                      <StatCard icon={<CalendarDays size={22} />} title="Total Registrations" value={confTotal} sub="SSC 2026" accent="blue" />
+                      <StatCard icon={<CheckCircle size={22} />} title="Confirmed" value={confConfirmed} sub="Approved / Paid" accent="green" />
+                      <StatCard icon={<Clock size={22} />} title="Pending" value={confPending} sub="Awaiting confirmation" accent="orange" />
+                      <StatCard icon={<Users size={22} />} title="Other Forms" value={counts.campus + counts.ttb + counts.fcf + counts.tribe} sub="Campus, TTB, FCF, Tribe" accent="purple" />
                     </div>
 
-                    <select
-                      className="rounded-xl bg-ink-deep border border-white/10 px-3 py-2 text-sm text-foreground focus:outline-none focus:border-purple-glow [&>option]:bg-ink-deep"
-                      value={filterFormType}
-                      onChange={(e) => setFilterFormType(e.target.value)}
-                    >
-                      <option value="All">All Form Types</option>
-                      <option value="SSC 2026 Registration">SSC 2026 Registration</option>
-                      <option value="Volunteer Application">Volunteer Application</option>
-                      <option value="Campus Chapter">Campus Chapter</option>
-                      <option value="Takeover Table">Takeover Table</option>
-                      <option value="First Class Formula">First Class Formula</option>
-                      <option value="Tribe Application">Tribe Application</option>
-                    </select>
+                    <SectionHeading>SSC 2026 — Volunteer Recruitment</SectionHeading>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
+                      <StatCard icon={<Users size={22} />} title="Total Applications" value={volTotal} accent="pink" />
+                      <StatCard icon={<Clock size={22} />} title="Pending" value={volPending} accent="orange" />
+                      <StatCard icon={<Activity size={22} />} title="Under Review" value={volUnderReview} accent="blue" />
+                      <StatCard icon={<Trophy size={22} />} title="Selected" value={volSelected} accent="green" />
+                      <StatCard icon={<ListFilter size={22} />} title="Waitlisted" value={volWaitlisted} accent="yellow" />
+                      <StatCard icon={<XCircle size={22} />} title="Not Selected" value={volStatus["Not Selected"] ?? 0} accent="purple" />
+                    </div>
 
-                    <select
-                      className="rounded-xl bg-ink-deep border border-white/10 px-3 py-2 text-sm text-foreground focus:outline-none focus:border-purple-glow [&>option]:bg-ink-deep"
-                      value={filterStatus}
-                      onChange={(e) => setFilterStatus(e.target.value)}
-                    >
-                      <option value="All">All Statuses</option>
-                      <option value="Pending">Pending</option>
-                      <option value="Under Review">Under Review</option>
-                      <option value="Selected">Selected</option>
-                      <option value="Waitlisted">Waitlisted</option>
-                      <option value="Not Selected">Not Selected</option>
-                      <option value="Confirmed">Confirmed</option>
-                      <option value="Approved">Approved</option>
-                    </select>
-                  </div>
-                </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+                      <div className="glass-strong rounded-2xl border border-white/5 p-6">
+                        <h3 className="text-base font-bold text-white mb-1">Registration Status</h3>
+                        <p className="text-xs text-foreground-subtle mb-5">SSC 2026 conference breakdown</p>
+                        {confStatusChartData.length > 0 ? (
+                          <>
+                            <div className="h-[200px]">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                  <Pie data={confStatusChartData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={4} dataKey="value">
+                                    {confStatusChartData.map((_e, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                                  </Pie>
+                                  <RechartsTooltip contentStyle={{ backgroundColor: "#0a0a0a", borderColor: "#333", borderRadius: "12px" }} itemStyle={{ color: "#fff" }} />
+                                </PieChart>
+                              </ResponsiveContainer>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {confStatusChartData.map((d, i) => (
+                                <div key={d.name} className="flex items-center gap-1.5 text-xs text-foreground-muted">
+                                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                                  {d.name} ({d.value})
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        ) : (
+                          <p className="text-center text-foreground-subtle text-sm py-10">No data yet</p>
+                        )}
+                      </div>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm whitespace-nowrap">
-                    <thead className="bg-white/[0.03] text-foreground-muted uppercase text-[11px] tracking-wider">
-                      <tr>
-                        <th className="px-6 py-4 font-semibold">Name</th>
-                        <th className="px-6 py-4 font-semibold">Form Type</th>
-                        <th className="px-6 py-4 font-semibold">Department / School</th>
-                        <th className="px-6 py-4 font-semibold">Role</th>
-                        <th className="px-6 py-4 font-semibold">Date</th>
-                        <th className="px-6 py-4 font-semibold">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {filteredData.length > 0 ? (
-                        filteredData.map((reg) => (
-                          <tr key={reg.id} className="hover:bg-white/[0.02] transition-colors">
-                            <td className="px-6 py-4">
-                              <div className="font-medium text-white">{reg.name}</div>
-                              <div className="text-foreground-muted text-xs">{reg.email}</div>
-                              {reg.phone && <div className="text-foreground-muted text-xs">{reg.phone}</div>}
-                            </td>
-                            <td className="px-6 py-4">
-                              <FormTypeBadge type={reg.form_type} />
-                            </td>
-                            <td className="px-6 py-4 text-foreground-subtle text-xs max-w-[160px] truncate">{reg.university}</td>
-                            <td className="px-6 py-4 text-foreground-subtle text-xs">{reg.level}</td>
-                            <td className="px-6 py-4 text-foreground-subtle text-xs">{reg.date}</td>
-                            <td className="px-6 py-4">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusColor(reg.status)}`}>
-                                {reg.status}
+                      <div className="glass-strong rounded-2xl border border-white/5 p-6">
+                        <h3 className="text-base font-bold text-white mb-1">Volunteer Status</h3>
+                        <p className="text-xs text-foreground-subtle mb-5">Across all applications</p>
+                        {volStatusChartData.length > 0 ? (
+                          <>
+                            <div className="h-[200px]">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                  <Pie data={volStatusChartData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={4} dataKey="value">
+                                    {volStatusChartData.map((_e, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                                  </Pie>
+                                  <RechartsTooltip contentStyle={{ backgroundColor: "#0a0a0a", borderColor: "#333", borderRadius: "12px" }} itemStyle={{ color: "#fff" }} />
+                                </PieChart>
+                              </ResponsiveContainer>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {volStatusChartData.map((d, i) => (
+                                <div key={d.name} className="flex items-center gap-1.5 text-xs text-foreground-muted">
+                                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                                  {d.name} ({d.value})
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        ) : (
+                          <p className="text-center text-foreground-subtle text-sm py-10">No data yet</p>
+                        )}
+                      </div>
+
+                      <div className="glass-strong rounded-2xl border border-white/5 p-6">
+                        <h3 className="text-base font-bold text-white mb-1">Recent Activity</h3>
+                        <p className="text-xs text-foreground-subtle mb-5">Latest 6 submissions</p>
+                        <div className="space-y-3">
+                          {registrations.slice(0, 6).map((r) => (
+                            <div key={r.id} className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                                {r.name.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium text-white truncate">{r.name}</p>
+                                <p className="text-[11px] text-foreground-subtle">{r.form_type} · {r.date}</p>
+                              </div>
+                              <span className={`shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${statusColor(r.status)}`}>
+                                {r.status}
                               </span>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={6} className="px-6 py-16 text-center text-foreground-muted">
-                            No records match your search criteria.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </>
-          )}
-          </>
-          )}
+                            </div>
+                          ))}
+                          {registrations.length === 0 && (
+                            <p className="text-center text-foreground-subtle text-sm py-4">No submissions yet</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {volDeptChartData.length > 0 && (
+                      <div className="glass-strong rounded-2xl border border-white/5 p-6 mb-10">
+                        <h3 className="text-base font-bold text-white mb-1">Volunteer Applications by Department</h3>
+                        <p className="text-xs text-foreground-subtle mb-6">First-choice department selections (top 10)</p>
+                        <div className="h-[280px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={volDeptChartData} margin={{ top: 5, right: 10, left: -10, bottom: 60 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#1f1f1f" vertical={false} />
+                              <XAxis dataKey="name" stroke="#555" tick={{ fill: "#888", fontSize: 11 }} angle={-35} textAnchor="end" interval={0} />
+                              <YAxis stroke="#555" tick={{ fill: "#888", fontSize: 11 }} allowDecimals={false} />
+                              <RechartsTooltip contentStyle={{ backgroundColor: "#0a0a0a", borderColor: "#333", borderRadius: "12px" }} itemStyle={{ color: "#fff" }} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+                              <Bar dataKey="count" name="Applications" fill="#EC4899" radius={[4, 4, 0, 0]} maxBarSize={48} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    )}
+
+                    <SectionHeading>All Submissions</SectionHeading>
+                    <div className="glass-strong rounded-2xl border border-white/5 overflow-hidden">
+                      <div className="p-5 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                          <h3 className="text-base font-bold text-white">All Registrations</h3>
+                          <p className="text-xs text-foreground-muted mt-0.5">Showing {filteredData.length} of {registrations.length} total</p>
+                        </div>
+                        <div className="flex flex-col sm:flex-row flex-wrap gap-3 w-full md:w-auto">
+                          <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" size={14} />
+                            <input
+                              type="text"
+                              placeholder="Search name, email, phone…"
+                              className="w-full sm:w-56 rounded-xl bg-white/5 border border-white/10 pl-9 pr-4 py-2 text-sm text-foreground focus:outline-none focus:border-purple-glow"
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                          </div>
+                          <select
+                            className="rounded-xl bg-ink-deep border border-white/10 px-3 py-2 text-sm text-foreground focus:outline-none focus:border-purple-glow [&>option]:bg-ink-deep"
+                            value={filterFormType}
+                            onChange={(e) => setFilterFormType(e.target.value)}
+                          >
+                            <option value="All">All Form Types</option>
+                            <option value="SSC 2026 Registration">SSC 2026 Registration</option>
+                            <option value="Volunteer Application">Volunteer Application</option>
+                            <option value="Campus Chapter">Campus Chapter</option>
+                            <option value="Takeover Table">Takeover Table</option>
+                            <option value="First Class Formula">First Class Formula</option>
+                            <option value="Tribe Application">Tribe Application</option>
+                          </select>
+                          <select
+                            className="rounded-xl bg-ink-deep border border-white/10 px-3 py-2 text-sm text-foreground focus:outline-none focus:border-purple-glow [&>option]:bg-ink-deep"
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                          >
+                            <option value="All">All Statuses</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Under Review">Under Review</option>
+                            <option value="Selected">Selected</option>
+                            <option value="Waitlisted">Waitlisted</option>
+                            <option value="Not Selected">Not Selected</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Approved">Approved</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm whitespace-nowrap">
+                          <thead className="bg-white/[0.03] text-foreground-muted uppercase text-[11px] tracking-wider">
+                            <tr>
+                              <th className="px-6 py-4 font-semibold">Name</th>
+                              <th className="px-6 py-4 font-semibold">Form Type</th>
+                              <th className="px-6 py-4 font-semibold">Dept / School</th>
+                              <th className="px-6 py-4 font-semibold">Role</th>
+                              <th className="px-6 py-4 font-semibold">Date</th>
+                              <th className="px-6 py-4 font-semibold">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/5">
+                            {filteredData.length > 0 ? (
+                              filteredData.map((reg) => (
+                                <tr key={reg.id} className="hover:bg-white/[0.02] transition-colors">
+                                  <td className="px-6 py-4">
+                                    <div className="font-medium text-white">{reg.name}</div>
+                                    <div className="text-foreground-muted text-xs">{reg.email}</div>
+                                    {reg.phone && <div className="text-foreground-muted text-xs">{reg.phone}</div>}
+                                  </td>
+                                  <td className="px-6 py-4"><FormTypeBadge type={reg.form_type} /></td>
+                                  <td className="px-6 py-4 text-foreground-subtle text-xs max-w-[160px] truncate">{reg.university}</td>
+                                  <td className="px-6 py-4 text-foreground-subtle text-xs">{reg.level}</td>
+                                  <td className="px-6 py-4 text-foreground-subtle text-xs">{reg.date}</td>
+                                  <td className="px-6 py-4">
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusColor(reg.status)}`}>
+                                      {reg.status}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan={6} className="px-6 py-16 text-center text-foreground-muted">
+                                  No records match your search criteria.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </>
+            )}
           </div>
         </div>
       </main>

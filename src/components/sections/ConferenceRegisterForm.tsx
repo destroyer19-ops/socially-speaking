@@ -11,7 +11,7 @@ interface FormData {
   whatsapp: string;
   age_range: string;
   gender: string;
-  city_state: string;
+  state_country: string;
   school_org: string;
   occupation: string;
   how_heard: string;
@@ -27,7 +27,7 @@ const initialData: FormData = {
   whatsapp: "",
   age_range: "",
   gender: "",
-  city_state: "",
+  state_country: "",
   school_org: "",
   occupation: "",
   how_heard: "",
@@ -231,6 +231,7 @@ export function ConferenceRegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [sameAsPhone, setSameAsPhone] = useState(false);
+  const [whatsappGroupLink, setWhatsappGroupLink] = useState<string | null>(null);
 
   function handleInput(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = e.target;
@@ -274,7 +275,7 @@ export function ConferenceRegisterForm() {
     if (!formData.whatsapp.trim()) newErrors.whatsapp = "WhatsApp number is required";
     if (!formData.age_range) newErrors.age_range = "Please select your age range";
     if (!formData.gender) newErrors.gender = "Please select your gender";
-    if (!formData.city_state.trim()) newErrors.city_state = "City / State is required";
+    if (!formData.state_country.trim()) newErrors.state_country = "State / Country is required";
     if (!formData.school_org.trim())
       newErrors.school_org = "School / University / Organisation is required";
     if (!formData.occupation) newErrors.occupation = "Please select your occupation";
@@ -291,16 +292,29 @@ export function ConferenceRegisterForm() {
     if (!validate()) return;
     setIsSubmitting(true);
     try {
-      const res = await fetch("/process-ssc2026.php", {
+      if (import.meta.env.DEV) {
+        // Simulate a successful form submission in development mode
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setWhatsappGroupLink("https://chat.whatsapp.com/HuuOUNSbSnyG6Fbz32DeYJ");
+        setSubmitSuccess(true);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      const res = await fetch(import.meta.env.BASE_URL + "process-ssc2026.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-      if (!res.ok) throw new Error("Submission failed");
+      const data = await res.json();
+      if (!res.ok && !data.ok) {
+        throw new Error(data.error || "Submission failed");
+      }
+      setWhatsappGroupLink(data.whatsapp_group_link ?? null);
       setSubmitSuccess(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch {
-      setErrors({ _general: "Something went wrong. Please try again." });
+    } catch (err: any) {
+      setErrors({ _general: err.message || "Something went wrong. Please try again." });
     } finally {
       setIsSubmitting(false);
     }
@@ -309,30 +323,37 @@ export function ConferenceRegisterForm() {
   if (submitSuccess) {
     return (
       <section className="relative min-h-screen bg-ink-deep flex items-center justify-center px-4 py-24">
-        <div className="text-center max-w-lg mx-auto">
-          <div className="mx-auto mb-8 grid h-20 w-20 place-items-center rounded-full bg-green-500/15 border border-green-500/30">
+        <div className="max-w-lg mx-auto">
+          <div className="mb-8 grid h-20 w-20 place-items-center rounded-full bg-green-500/15 border border-green-500/30">
             <Check size={36} className="text-green-400" />
           </div>
           <h2 className="font-display font-black text-3xl sm:text-4xl text-white">
-            Thank you for registering for Socially Speaking Conference 2026.
+            Registration Successful! 🎉
           </h2>
           <p className="mt-5 text-foreground-muted text-lg leading-relaxed">
-            Your registration has been received. Further information about the conference will be
-            sent to your email shortly.
+            You're officially registered for SSC 2026.
           </p>
-          <p className="mt-4 text-foreground-muted leading-relaxed">
-            To receive important conference updates, announcements, and information leading up to
-            the event, join the official SSC 2026 WhatsApp community.
-          </p>
-          <a
-            href="https://chat.whatsapp.com/ssc2026"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-8 btn-primary group inline-flex"
-          >
-            Join the WhatsApp Community
-            <ExternalLink size={16} className="ml-2" />
-          </a>
+          
+          {whatsappGroupLink ? (
+            <>
+              <p className="mt-4 text-foreground-muted leading-relaxed">
+                Join your assigned SSC 2026 Attendees WhatsApp Group to receive important event updates and announcements.
+              </p>
+              <a
+                href={whatsappGroupLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-8 btn-primary group inline-flex"
+              >
+                Join SSC 2026 Attendees
+                <ExternalLink size={16} className="ml-2" />
+              </a>
+            </>
+          ) : (
+            <p className="mt-4 text-foreground-muted leading-relaxed">
+              The attendee WhatsApp groups are currently full. Further communication will be provided through the official registration channels.
+            </p>
+          )}
         </div>
       </section>
     );
@@ -359,13 +380,13 @@ export function ConferenceRegisterForm() {
           className="absolute inset-0 h-full w-full object-cover opacity-20"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-ink-deep/50 to-ink-deep" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 pt-12 pb-20 text-center">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 pt-12 pb-20">
           <Reveal>
-            <div className="chip mx-auto">The Takeover Generation</div>
+            <div className="chip mb-6">The Takeover Generation</div>
             <h1 className="mt-6 font-display font-black text-4xl sm:text-5xl lg:text-6xl leading-[1.0]">
               Socially Speaking <span className="text-gradient">Conference 2026</span>
             </h1>
-            <p className="mt-4 text-foreground-muted text-lg max-w-xl mx-auto">
+            <p className="mt-4 text-foreground-muted text-lg max-w-xl">
               Saturday, December 5, 2026
             </p>
             <p className="mt-2 text-foreground-muted">Registration is now open.</p>
@@ -487,15 +508,15 @@ export function ConferenceRegisterForm() {
                 />
               </div>
 
-              {/* City / State */}
+              {/* State / Country */}
               <div>
-                <FieldLabel required>City / State</FieldLabel>
+                <FieldLabel required>State / Country</FieldLabel>
                 <TextInput
-                  name="city_state"
-                  value={formData.city_state}
+                  name="state_country"
+                  value={formData.state_country}
                   onChange={handleInput}
                   placeholder="e.g. Lagos, Nigeria"
-                  error={errors.city_state}
+                  error={errors.state_country}
                 />
               </div>
 
@@ -600,7 +621,7 @@ export function ConferenceRegisterForm() {
         </Reveal>
 
         {/* For more information */}
-        <Reveal className="mt-6 text-center">
+        <Reveal className="mt-6">
           <p className="text-sm text-foreground-subtle">
             For more information:{" "}
             <a

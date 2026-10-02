@@ -28,7 +28,7 @@ function clean_str($value) {
 function sendConfirmationEmail($to_email, $to_name) {
     if (!defined('BREVO_API_KEY') || BREVO_API_KEY === '') return false;
     
-    $whatsapp_link = "https://chat.whatsapp.com/ssc2026volunteers";
+    $whatsapp_link = "https://chat.whatsapp.com/CUXL6lVz0MKBnBp5YJqC8Y?s=cl&p=i&mlu=4&ilr=4";
     $subject = "Your SSC 2026 Volunteer Application Has Been Received";
     
     $html_body = "
@@ -133,15 +133,6 @@ if (!$conn->query($sql_table)) {
     exit;
 }
 
-$stmt = $conn->prepare("INSERT INTO `$table_name` (
-    submitted_at, full_name, phone, whatsapp, email, age, gender, location, occupation, instagram,
-    volunteered_ssc, volunteered_ssc_role, volunteered_other, volunteered_other_role,
-    first_choice, second_choice, department_reason, skills, willing_second_choice, willing_reassign,
-    reason_volunteer, excellence_meaning, three_words, pressure_response,
-    avail_conference, avail_training, avail_calltime, avail_preevent,
-    emergency_name, emergency_rel, emergency_phone
-) VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-
 $full_name = clean_str($input['full_name']);
 $phone = clean_str($input['phone']);
 $whatsapp = clean_str($input['whatsapp']);
@@ -151,6 +142,27 @@ $gender = clean_str($input['gender']);
 $location = clean_str($input['location']);
 $occupation = clean_str($input['occupation']);
 $instagram = clean_str($input['instagram'] ?? '');
+
+$escaped_email = $conn->real_escape_string($email);
+$escaped_phone = $conn->real_escape_string($phone);
+$dup = $conn->query("SELECT id FROM `$table_name` WHERE email = '$escaped_email' OR phone = '$escaped_phone' LIMIT 1");
+if ($dup && $dup->num_rows > 0) {
+    $conn->close();
+    http_response_code(409);
+    echo json_encode(['ok' => false, 'error' => 'This email address or phone number has already been submitted for volunteer registration.']);
+    exit;
+}
+
+$stmt = $conn->prepare("INSERT INTO `$table_name` (
+    submitted_at, full_name, phone, whatsapp, email, age, gender, location, occupation, instagram,
+    volunteered_ssc, volunteered_ssc_role, volunteered_other, volunteered_other_role,
+    first_choice, second_choice, department_reason, skills, willing_second_choice, willing_reassign,
+    reason_volunteer, excellence_meaning, three_words, pressure_response,
+    avail_conference, avail_training, avail_calltime, avail_preevent,
+    emergency_name, emergency_rel, emergency_phone
+) VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+
 
 $volunteered_ssc = clean_str($input['volunteered_ssc']);
 $volunteered_ssc_role = clean_str($input['volunteered_ssc_role'] ?? '');

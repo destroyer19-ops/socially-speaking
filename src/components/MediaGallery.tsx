@@ -34,22 +34,6 @@ const accounts = [
     ],
   },
   {
-    name: "Socially Speaking Conference",
-    description: "Conference announcements, speakers, highlights and updates.",
-    socials: [
-      {
-        label: "sociallyspeaking.conf",
-        icon: Instagram,
-        href: "https://instagram.com/sociallyspeaking.conf",
-      },
-      {
-        label: "sociallyspeaking.conf",
-        icon: TikTokIcon,
-        href: "https://tiktok.com/@sociallyspeaking.conf",
-      },
-    ],
-  },
-  {
     name: "Socially Speaking Outreach",
     description: "Outreach campaigns, impact stories and opportunities to support.",
     socials: [

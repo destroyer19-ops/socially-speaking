@@ -9,7 +9,6 @@ const DEPARTMENTS = [
   "Registration",
   "Marketing and Publicity",
   "Ushering / Audience Management",
-  "Merchandise",
   "Operations and Logistics",
   "Security / Crowd Support",
   "Media and Content",
@@ -253,16 +252,27 @@ export function VolunteerApplicationForm() {
     if (!validateStep(7)) return;
     setIsSubmitting(true);
     try {
-      const res = await fetch("/process-volunteer.php", {
+      if (import.meta.env.DEV) {
+        // Simulate a successful form submission in development mode
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setSubmitSuccess(true);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      const res = await fetch(import.meta.env.BASE_URL + "process-volunteer.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-      if (!res.ok) throw new Error("Submission failed");
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Submission failed");
+      }
       setSubmitSuccess(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch {
-      setErrors({ _general: "Submission failed. Please try again later." });
+    } catch (err: any) {
+      setErrors({ _general: err.message || "Submission failed. Please try again later." });
     } finally {
       setIsSubmitting(false);
     }
@@ -290,12 +300,12 @@ export function VolunteerApplicationForm() {
             If you do not see the email in your inbox, please check your Promotions or Spam folder.
           </p>
           <a
-            href="https://chat.whatsapp.com/ssc2026volunteers"
+            href="https://chat.whatsapp.com/CUXL6lVz0MKBnBp5YJqC8Y?s=cl&p=i&mlu=4&ilr=4"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-8 btn-primary group inline-flex"
           >
-            Join WhatsApp Group Now
+            Join the SSC2026 Volunteers
             <ExternalLink size={16} className="ml-2" />
           </a>
         </div>

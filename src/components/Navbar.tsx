@@ -13,6 +13,7 @@ const links = [
   { label: "Outreach", to: "/outreach" },
   { label: "Impact", to: "/impact" },
   { label: "Media", to: "/media" },
+  { label: "Blog", to: "/blog" },
 ];
 
 export function Navbar() {

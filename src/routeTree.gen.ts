@@ -21,8 +21,10 @@ import { Route as ConferenceRegisterRouteImport } from './routes/conference-regi
 import { Route as ConferenceRouteImport } from './routes/conference'
 import { Route as CampusRegisterRouteImport } from './routes/campus-register'
 import { Route as CampusRouteImport } from './routes/campus'
+import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 
 const VolunteerRoute = VolunteerRouteImport.update({
   id: '/volunteer',
@@ -84,6 +86,11 @@ const CampusRoute = CampusRouteImport.update({
   path: '/campus',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -94,10 +101,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => BlogRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/blog': typeof BlogRouteWithChildren
   '/campus': typeof CampusRoute
   '/campus-register': typeof CampusRegisterRoute
   '/conference': typeof ConferenceRoute
@@ -110,10 +123,12 @@ export interface FileRoutesByFullPath {
   '/takeover-table': typeof TakeoverTableRoute
   '/tribe': typeof TribeRoute
   '/volunteer': typeof VolunteerRoute
+  '/blog/$slug': typeof BlogSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/blog': typeof BlogRouteWithChildren
   '/campus': typeof CampusRoute
   '/campus-register': typeof CampusRegisterRoute
   '/conference': typeof ConferenceRoute
@@ -126,11 +141,13 @@ export interface FileRoutesByTo {
   '/takeover-table': typeof TakeoverTableRoute
   '/tribe': typeof TribeRoute
   '/volunteer': typeof VolunteerRoute
+  '/blog/$slug': typeof BlogSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/blog': typeof BlogRouteWithChildren
   '/campus': typeof CampusRoute
   '/campus-register': typeof CampusRegisterRoute
   '/conference': typeof ConferenceRoute
@@ -143,12 +160,14 @@ export interface FileRoutesById {
   '/takeover-table': typeof TakeoverTableRoute
   '/tribe': typeof TribeRoute
   '/volunteer': typeof VolunteerRoute
+  '/blog/$slug': typeof BlogSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
+    | '/blog'
     | '/campus'
     | '/campus-register'
     | '/conference'
@@ -161,10 +180,12 @@ export interface FileRouteTypes {
     | '/takeover-table'
     | '/tribe'
     | '/volunteer'
+    | '/blog/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
+    | '/blog'
     | '/campus'
     | '/campus-register'
     | '/conference'
@@ -177,10 +198,12 @@ export interface FileRouteTypes {
     | '/takeover-table'
     | '/tribe'
     | '/volunteer'
+    | '/blog/$slug'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/blog'
     | '/campus'
     | '/campus-register'
     | '/conference'
@@ -193,11 +216,13 @@ export interface FileRouteTypes {
     | '/takeover-table'
     | '/tribe'
     | '/volunteer'
+    | '/blog/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  BlogRoute: typeof BlogRouteWithChildren
   CampusRoute: typeof CampusRoute
   CampusRegisterRoute: typeof CampusRegisterRoute
   ConferenceRoute: typeof ConferenceRoute
@@ -298,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CampusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -312,12 +344,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof BlogRoute
+    }
   }
 }
+
+interface BlogRouteChildren {
+  BlogSlugRoute: typeof BlogSlugRoute
+}
+
+const BlogRouteChildren: BlogRouteChildren = {
+  BlogSlugRoute: BlogSlugRoute,
+}
+
+const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  BlogRoute: BlogRouteWithChildren,
   CampusRoute: CampusRoute,
   CampusRegisterRoute: CampusRegisterRoute,
   ConferenceRoute: ConferenceRoute,

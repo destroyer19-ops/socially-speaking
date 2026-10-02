@@ -71,7 +71,8 @@ $phone           = ssc_clean($data['phone']           ?? '');
 $whatsapp        = ssc_clean($data['whatsapp']        ?? '');
 $age_range       = ssc_clean($data['age_range']       ?? '');
 $gender          = ssc_clean($data['gender']          ?? '');
-$city_state      = ssc_clean($data['city_state']      ?? '');
+// Accept new field name state_country; fall back to old state_country for existing data
+$state_country   = ssc_clean($data['state_country']   ?? $data['state_country'] ?? '');
 $school_org      = ssc_clean($data['school_org']      ?? '');
 $occupation      = ssc_clean($data['occupation']      ?? '');
 $how_heard       = ssc_clean($data['how_heard']       ?? '');
@@ -87,7 +88,7 @@ $required = [
     'whatsapp'        => $whatsapp,
     'age_range'       => $age_range,
     'gender'          => $gender,
-    'city_state'      => $city_state,
+    'state_country'   => $state_country,
     'school_org'      => $school_org,
     'occupation'      => $occupation,
     'how_heard'       => $how_heard,
@@ -137,7 +138,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS `$table` (
     whatsapp       VARCHAR(50)   NOT NULL,
     age_range      VARCHAR(20)   NOT NULL,
     gender         VARCHAR(20)   NOT NULL,
-    city_state     VARCHAR(100)  NOT NULL,
+    state_country     VARCHAR(100)  NOT NULL,
     school_org     VARCHAR(200)  NOT NULL,
     occupation     VARCHAR(50)   NOT NULL,
     how_heard      VARCHAR(100)  NOT NULL,
@@ -150,15 +151,61 @@ $conn->query("CREATE TABLE IF NOT EXISTS `$table` (
     UNIQUE KEY email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+$conn->query("CREATE TABLE IF NOT EXISTS `ssc_whatsapp_groups` (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    capacity INT NOT NULL DEFAULT 1000,
+    assigned INT NOT NULL DEFAULT 0,
+    link VARCHAR(500) NOT NULL,
+    active TINYINT(1) NOT NULL DEFAULT 1,
+    sort_order INT NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$res_col = $conn->query("SHOW COLUMNS FROM `$table` LIKE 'whatsapp_group_id'");
+if ($res_col->num_rows === 0) {
+    $conn->query("ALTER TABLE `$table` ADD COLUMN whatsapp_group_id INT NULL");
+}
+
 // ── Duplicate-email guard ─────────────────────────────────────────────────────
 $escaped_email = $conn->real_escape_string($email);
-$dup = $conn->query("SELECT id FROM `$table` WHERE email = '$escaped_email' LIMIT 1");
+$escaped_phone = $conn->real_escape_string($phone);
+$dup = $conn->query("SELECT id, whatsapp_group_id FROM `$table` WHERE email = '$escaped_email' OR phone = '$escaped_phone' LIMIT 1");
 if ($dup && $dup->num_rows > 0) {
+    $row = $dup->fetch_assoc();
+    $group_link = null;
+    if (!empty($row['whatsapp_group_id'])) {
+        $gid = (int)$row['whatsapp_group_id'];
+        $gRes = $conn->query("SELECT link FROM `ssc_whatsapp_groups` WHERE id = $gid LIMIT 1");
+        if ($gRes && $gRes->num_rows > 0) {
+            $gRow = $gRes->fetch_assoc();
+            $group_link = $gRow['link'];
+        }
+    }
+    
     $conn->close();
     ob_end_clean();
-    http_response_code(409);
-    echo json_encode(['ok' => false, 'error' => 'This email address is already registered for SSC 2026']);
+    // Return 200 so the frontend can show the success CTA rather than a generic error.
+    http_response_code(200);
+    echo json_encode([
+        'ok' => true, 
+        'isDuplicate' => true, 
+        'whatsapp_group_link' => $group_link,
+        'message' => 'This email address or phone number is already registered for SSC 2026.'
+    ]);
     exit;
+}
+
+// ── WhatsApp Group Allocation (Transaction) ──────────────────────────────────
+$conn->begin_transaction();
+
+$group_id = null;
+$group_link = null;
+// SELECT ... FOR UPDATE locks the rows until we commit, preventing concurrent overbooking
+$groupRes = $conn->query("SELECT id, link FROM ssc_whatsapp_groups WHERE active = 1 AND assigned < capacity ORDER BY sort_order ASC, id ASC LIMIT 1 FOR UPDATE");
+if ($groupRes && $groupRes->num_rows > 0) {
+    $group = $groupRes->fetch_assoc();
+    $group_id = $group['id'];
+    $group_link = $group['link'];
 }
 
 // ── Generate unique registration ID ──────────────────────────────────────────
@@ -172,14 +219,17 @@ $qr_data      = urlencode($reg_id);
 $qr_code_url  = "https://api.qrserver.com/v1/create-qr-code/?data={$qr_data}&size=300x300&format=png&margin=10";
 
 // ── Insert record ─────────────────────────────────────────────────────────────
+$raw_payload = json_encode($data);
+
 $stmt = $conn->prepare("INSERT INTO `$table`
     (id, created_at, status, full_name, email, phone, whatsapp, age_range, gender,
-     city_state, school_org, occupation, how_heard, attended_before,
-     editions_attended, hoping_to_gain, qr_code_url, raw_payload)
+     state_country, school_org, occupation, how_heard, attended_before,
+     editions_attended, hoping_to_gain, qr_code_url, raw_payload, whatsapp_group_id)
 VALUES
-    (?, NOW(), 'Pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    (?, NOW(), 'Pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
 if (!$stmt) {
+    $conn->rollback();
     $conn->close();
     ob_end_clean();
     http_response_code(500);
@@ -187,27 +237,32 @@ if (!$stmt) {
     exit;
 }
 
-$raw_payload = json_encode($data);
-
 $stmt->bind_param(
-    'sssssssssssssssss',
+    'ssssssssssssssssi',
     $reg_id,
     $full_name, $email, $phone, $whatsapp, $age_range, $gender,
-    $city_state, $school_org, $occupation, $how_heard, $attended_before,
-    $editions_attended, $hoping_to_gain, $qr_code_url, $raw_payload
+    $state_country, $school_org, $occupation, $how_heard, $attended_before,
+    $editions_attended, $hoping_to_gain, $qr_code_url, $raw_payload,
+    $group_id
 );
 
 if (!$stmt->execute()) {
     $err = $stmt->error;
     $stmt->close();
+    $conn->rollback();
     $conn->close();
     ob_end_clean();
     http_response_code(500);
     echo json_encode(['ok' => false, 'error' => 'Failed to save registration: ' . $err]);
     exit;
 }
-
 $stmt->close();
+
+// ── Increment assigned counter atomically ────────────────────────────────────
+if ($group_id) {
+    $conn->query("UPDATE ssc_whatsapp_groups SET assigned = assigned + 1 WHERE id = $group_id");
+}
+$conn->commit();
 $conn->close();
 
 // ── Send confirmation e-mail via Brevo ────────────────────────────────────────
@@ -275,7 +330,7 @@ $html_body = "
                     <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">
                       <tr><td style=\"padding:6px 0;font-size:13px;color:#737373;width:40%;\">Name</td><td style=\"padding:6px 0;font-size:13px;color:#e5e5e5;font-weight:600;\">" . htmlspecialchars($full_name) . "</td></tr>
                       <tr><td style=\"padding:6px 0;font-size:13px;color:#737373;\">Email</td><td style=\"padding:6px 0;font-size:13px;color:#e5e5e5;\">" . htmlspecialchars($email) . "</td></tr>
-                      <tr><td style=\"padding:6px 0;font-size:13px;color:#737373;\">City</td><td style=\"padding:6px 0;font-size:13px;color:#e5e5e5;\">" . htmlspecialchars($city_state) . "</td></tr>
+                      <tr><td style=\"padding:6px 0;font-size:13px;color:#737373;\">State / Country</td><td style=\"padding:6px 0;font-size:13px;color:#e5e5e5;\">" . htmlspecialchars($state_country) . "</td></tr>
                       <tr><td style=\"padding:6px 0;font-size:13px;color:#737373;\">Status</td><td style=\"padding:6px 0;font-size:13px;\"><span style=\"background:#7c3aed22;color:#a78bfa;border-radius:6px;padding:2px 10px;font-size:12px;font-weight:700;\">Registered</span></td></tr>
                     </table>
                   </td>
@@ -343,7 +398,8 @@ curl_close($ch);
 // ── Respond ───────────────────────────────────────────────────────────────────
 ob_end_clean();
 echo json_encode([
-    'ok'          => true,
-    'id'          => $reg_id,
-    'qr_code_url' => $qr_code_url,
+    'ok'                  => true,
+    'id'                  => $reg_id,
+    'qr_code_url'         => $qr_code_url,
+    'whatsapp_group_link' => $group_link,
 ]);
