@@ -193,6 +193,8 @@ $dup = $conn->query("SELECT id, whatsapp_group_id FROM `$table` WHERE email = '$
 if ($dup && $dup->num_rows > 0) {
     $row = $dup->fetch_assoc();
     $group_link = null;
+    $existing_reg_id = $row['id'];
+    
     if (!empty($row['whatsapp_group_id'])) {
         $gid = (int)$row['whatsapp_group_id'];
         $gRes = $conn->query("SELECT link FROM `ssc_whatsapp_groups` WHERE id = $gid LIMIT 1");
@@ -200,6 +202,22 @@ if ($dup && $dup->num_rows > 0) {
             $gRow = $gRes->fetch_assoc();
             $group_link = $gRow['link'];
         }
+    } else {
+        // They are registered but have no group (e.g. registered before groups were set up)
+        // Let's assign them one now.
+        $conn->begin_transaction();
+        $groupRes = $conn->query("SELECT id, link FROM ssc_whatsapp_groups WHERE active = 1 AND assigned < capacity ORDER BY sort_order ASC, id ASC LIMIT 1 FOR UPDATE");
+        if ($groupRes && $groupRes->num_rows > 0) {
+            $group = $groupRes->fetch_assoc();
+            $new_gid = $group['id'];
+            $group_link = $group['link'];
+            
+            // Update their registration with the new group
+            $conn->query("UPDATE `$table` SET whatsapp_group_id = $new_gid WHERE id = '$existing_reg_id'");
+            // Increment assigned count
+            $conn->query("UPDATE ssc_whatsapp_groups SET assigned = assigned + 1 WHERE id = $new_gid");
+        }
+        $conn->commit();
     }
     
     $conn->close();
