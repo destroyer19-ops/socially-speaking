@@ -196,9 +196,18 @@ if ($count_res) {
     }
 }
 
-$res_col = $conn->query("SHOW COLUMNS FROM `$table` LIKE 'whatsapp_group_id'");
-if ($res_col && $res_col->num_rows === 0) {
-    $conn->query("ALTER TABLE `$table` ADD COLUMN whatsapp_group_id INT NULL");
+// ── Ensure all required columns exist (safe for pre-existing tables) ──────────
+$columns_needed = [
+    'state_country'      => "ALTER TABLE `$table` ADD COLUMN state_country VARCHAR(100) NOT NULL DEFAULT ''",
+    'qr_code_url'        => "ALTER TABLE `$table` ADD COLUMN qr_code_url VARCHAR(500) NULL",
+    'raw_payload'        => "ALTER TABLE `$table` ADD COLUMN raw_payload LONGTEXT NULL",
+    'whatsapp_group_id'  => "ALTER TABLE `$table` ADD COLUMN whatsapp_group_id INT NULL",
+];
+foreach ($columns_needed as $col => $alter_sql) {
+    $chk = $conn->query("SHOW COLUMNS FROM `$table` LIKE '$col'");
+    if ($chk && $chk->num_rows === 0) {
+        $conn->query($alter_sql);
+    }
 }
 
 // ── Duplicate-email guard ─────────────────────────────────────────────────────
