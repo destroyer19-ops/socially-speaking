@@ -5,7 +5,7 @@ import { GraduationCap, Lightbulb, Users, Heart, ArrowUpRight, Check, Clock } fr
 import { Link } from "@tanstack/react-router";
 import campusCandidImg from "@/assets/ssc1.jpg";
 import tribeImg from "@/assets/ssc2.jpg";
-import exchangeImg from "@/assets/ssc4.JPG";
+import exchangeImg from "@/assets/ssc2026-ecard.webp";
 import crowdImgEx from "@/assets/crowd-ex.jpg";
 
 const focus = [

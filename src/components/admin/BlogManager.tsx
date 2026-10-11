@@ -15,6 +15,8 @@ export function BlogManager() {
     body: ""
   });
   const [saving, setSaving] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const fetchPosts = async () => {
     try {
@@ -61,6 +63,7 @@ export function BlogManager() {
       if (json.ok) {
         setIsFormOpen(false);
         setFormData({ title: "", slug: "", excerpt: "", image_url: "", body: "" });
+        setImageFile(null);
         fetchPosts();
       } else {
         alert(json.error || "Failed to save post");
@@ -132,14 +135,18 @@ export function BlogManager() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground-muted mb-1">Image URL (Optional)</label>
-              <input
-                name="image_url"
-                value={formData.image_url}
-                onChange={handleInput}
-                placeholder="https://example.com/image.jpg"
-                className="w-full rounded-lg bg-black/30 border border-white/10 px-4 py-2 text-sm text-white focus:outline-none focus:border-purple-glow"
-              />
+              <label className="block text-sm font-medium text-foreground-muted mb-1">Featured Image</label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                  className="block w-full text-sm text-foreground-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20"
+                />
+                {formData.image_url && !imageFile && (
+                  <span className="text-xs text-brand truncate max-w-[200px]">{formData.image_url}</span>
+                )}
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground-muted mb-1">Excerpt</label>
@@ -167,7 +174,7 @@ export function BlogManager() {
               disabled={saving}
               className="btn-primary w-full justify-center disabled:opacity-50"
             >
-              {saving ? "Saving..." : "Publish Post"}
+              {saving ? (uploading ? "Uploading Image..." : "Saving...") : "Publish Post"}
             </button>
           </form>
         </div>

@@ -17,7 +17,7 @@ import crowdImg from "@/assets/ssc10.JPG";
 import panelImg from "@/assets/ssc1.jpg";
 import campusImg from "@/assets/A6946819-B421-40DA-94D8-362CF0AF3B8F.jpg";
 import campusCandidImg from "@/assets/ssc2.jpg";
-import tribeImg from "@/assets/ssc4.JPG";
+import tribeImg from "@/assets/ssc2026-ecard.webp";
 import outreachImg from "@/assets/IMG_7848.JPG";
 import speakerImg from "@/assets/ssc7.JPG";
 import foodDriveImg from "@/assets/ssc8.JPG";

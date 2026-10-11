@@ -51,7 +51,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS `$groups_table` (
 $count_res = $conn->query("SELECT COUNT(*) AS cnt FROM `$groups_table`");
 if ($count_res && $count_res->fetch_assoc()['cnt'] == 0) {
     $defaults = [
-        [1, 'SSC 2026 Attendees 01', 1000, 'https://chat.whatsapp.com/HuuOUNSbSnyG6Fbz32DeYJ'],
+        [1, 'SSC 2026 Attendees 01', 1000, 'https://chat.whatsapp.com/EJ1DMJwBvr8JpSzhFk1btV?s=cl&p=i&mlu=4&ilr=4'],
         [2, 'SSC 2026 Attendees 02', 1000, 'https://chat.whatsapp.com/Ca7ZveBe2JX4QOXk4i1wHx'],
         [3, 'SSC 2026 Attendees 03', 1000, 'https://chat.whatsapp.com/DM6bKrrnqXgGR8QFsmOhUF'],
         [4, 'SSC 2026 Attendees 04', 1000, 'https://chat.whatsapp.com/C6CPDyEmLKC70YRuRjsxzM'],

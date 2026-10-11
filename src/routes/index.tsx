@@ -12,7 +12,8 @@ import { Stories } from "@/components/sections/Stories";
 import { Journey } from "@/components/sections/Journey";
 import { JoinUs } from "@/components/sections/JoinUs";
 import { VolunteerSection } from "@/components/sections/VolunteerSection";
-import crowdImg from "@/assets/ssc10.JPG";
+import crowdImg from "@/assets/ssc2026-ecard.webp";
+import popupImage from "@/assets/ssc2026-popup.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -103,8 +104,8 @@ function Home() {
               {/* Photo backdrop strip */}
               <div className="relative h-44 sm:h-52 overflow-hidden">
                 <img
-                  src={crowdImg}
-                  alt="SSC 2026 crowd"
+                  src={popupImage}
+                  alt="SSC 2026 popup image"
                   className="absolute inset-0 h-full w-full object-cover object-center opacity-70"
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#060412]" />

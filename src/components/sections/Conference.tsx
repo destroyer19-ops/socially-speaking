@@ -15,7 +15,7 @@ import panelImg from "@/assets/ssc1.jpg";
 import speakerImg from "@/assets/ssc2.jpg";
 import takeoverImg from "@/assets/takeover2.jpg";
 import flatlayImg from "@/assets/ssc-wealth.jpg";
-import tribeImg from "@/assets/ssc4.JPG";
+import tribeImg from "@/assets/ssc2026-ecard.webp";
 
 const journey = [
   {

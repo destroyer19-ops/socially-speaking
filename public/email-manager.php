@@ -75,6 +75,26 @@ if ($action === 'get_sources') {
             'columns' => ['id', 'full_name', 'email', 'phone', 'whatsapp', 'gender', 'university']
         ]
     ];
+    
+    foreach ($sources as &$src) {
+        $table = $src['key'];
+        
+        $res = $conn->query("SELECT COUNT(*) as cnt FROM `$table`");
+        $src['count'] = $res ? (int)$res->fetch_assoc()['cnt'] : 0;
+        
+        $src['statuses'] = [];
+        $res2 = $conn->query("SHOW COLUMNS FROM `$table` LIKE 'status'");
+        if ($res2 && $res2->num_rows > 0) {
+            $res3 = $conn->query("SELECT DISTINCT status FROM `$table` WHERE status IS NOT NULL AND status != ''");
+            if ($res3) {
+                while ($row = $res3->fetch_assoc()) {
+                    $src['statuses'][] = $row['status'];
+                }
+            }
+        }
+    }
+    unset($src);
+
     ob_end_clean();
     echo json_encode(['ok' => true, 'sources' => $sources]);
     exit;

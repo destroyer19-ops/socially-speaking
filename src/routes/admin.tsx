@@ -38,7 +38,7 @@ import { CampaignHistory } from "@/components/admin/CampaignHistory";
 import { QRScanner } from "@/components/admin/QRScanner";
 import { BlogManager } from "@/components/admin/BlogManager";
 import { WhatsAppGroupsManager } from "@/components/admin/WhatsAppGroupsManager";
-import { ScanLine, MessageSquare } from "lucide-react";
+import { ScanLine, MessageSquare, PenTool } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: AdminDashboard,
@@ -280,7 +280,7 @@ function EmailManager() {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "email" | "scanner" | "blog" | "whatsapp">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "email" | "scanner" | "blog" | "blog" | "whatsapp">("dashboard");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterFormType, setFilterFormType] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
@@ -288,6 +288,26 @@ function AdminDashboard() {
   const [apiData, setApiData] = useState<ApiData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isApproving, setIsApproving] = useState(false);
+
+  const handleApproveVolunteers = async () => {
+    if (!window.confirm("Are you sure you want to approve all pending volunteers?")) return;
+    setIsApproving(true);
+    try {
+      const res = await fetch((import.meta.env.BASE_URL || "/") + "admin-approve-volunteers.php", { method: "POST" });
+      const data = await res.json();
+      if (data.ok) {
+        alert(`Successfully approved ${data.affected} volunteers!`);
+        window.location.reload();
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (err) {
+      alert("Failed to approve volunteers.");
+    } finally {
+      setIsApproving(false);
+    }
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -408,7 +428,7 @@ function AdminDashboard() {
             { key: "scanner",   label: "QR Check-In",       icon: <ScanLine size={16} /> },
             { key: "blog",      label: "Blog Manager",       icon: <PenTool size={16} /> },
             { key: "whatsapp",  label: "WhatsApp Groups",    icon: <MessageSquare size={16} /> },
-          ] as { key: "dashboard" | "email" | "scanner" | "blog" | "whatsapp"; label: string; icon: React.ReactNode }[]).map((t) => (
+          ] as { key: "dashboard" | "email" | "scanner" | "blog" | "blog" | "whatsapp"; label: string; icon: React.ReactNode }[]).map((t) => (
             <button
               key={t.key}
               onClick={() => setActiveTab(t.key)}
@@ -448,12 +468,13 @@ function AdminDashboard() {
           </h1>
           <select
             value={activeTab}
-            onChange={(e) => setActiveTab(e.target.value as "dashboard" | "email" | "scanner" | "blog" | "whatsapp")}
+            onChange={(e) => setActiveTab(e.target.value as "dashboard" | "email" | "scanner" | "blog" | "blog" | "whatsapp")}
             className="bg-transparent border border-white/10 text-white text-sm rounded-lg py-1.5 px-3 focus:outline-none"
           >
             <option value="dashboard">Overview</option>
             <option value="email">Email Campaigns</option>
             <option value="scanner">QR Check-In</option>
+            <option value="blog">Blog Manager</option>
             <option value="blog">Blog Manager</option>
             <option value="whatsapp">WhatsApp Groups</option>
           </select>
@@ -471,12 +492,14 @@ function AdminDashboard() {
                   {activeTab === "email"     && "Email Campaigns"}
                   {activeTab === "scanner"   && "QR Check-In"}
                   {activeTab === "blog"      && "Blog Manager"}
+                  {activeTab === "blog"      && "Blog Manager"}
                   {activeTab === "whatsapp"  && "WhatsApp Groups"}
                 </h2>
                 <p className="text-sm text-foreground-muted mt-1">
                   {activeTab === "dashboard" && "Live registrations and recruitment — The Takeover Generation · 5 Dec 2026"}
                   {activeTab === "email"     && "Compose and dispatch attendee broadcasts via Brevo"}
                   {activeTab === "scanner"   && "Scan attendee QR codes to mark live check-ins"}
+                  {activeTab === "blog"      && "Manage and publish blog posts"}
                   {activeTab === "blog"      && "Manage and publish blog posts"}
                   {activeTab === "whatsapp"  && "Manage attendee WhatsApp group capacity, links and assignments"}
                 </p>
@@ -498,6 +521,7 @@ function AdminDashboard() {
 
             {/* ── Email Tab ── */}
             {activeTab === "email" && <EmailManager />}
+            {activeTab === "blog" && <BlogManager />}
             {activeTab === "blog" && <BlogManager />}
             {activeTab === "whatsapp" && <WhatsAppGroupsManager />}
 
@@ -524,7 +548,16 @@ function AdminDashboard() {
                       <StatCard icon={<Users size={22} />} title="Other Forms" value={counts.campus + counts.ttb + counts.fcf + counts.tribe} sub="Campus, TTB, FCF, Tribe" accent="purple" />
                     </div>
 
-                    <SectionHeading>SSC 2026 — Volunteer Recruitment</SectionHeading>
+                    <div className="flex items-center justify-between mb-2">
+                      <SectionHeading>SSC 2026 — Volunteer Recruitment</SectionHeading>
+                      <button
+                        onClick={handleApproveVolunteers}
+                        disabled={isApproving}
+                        className="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-1.5 px-4 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        {isApproving ? "Approving..." : "Approve All Pending"}
+                      </button>
+                    </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
                       <StatCard icon={<Users size={22} />} title="Total Applications" value={volTotal} accent="pink" />
                       <StatCard icon={<Clock size={22} />} title="Pending" value={volPending} accent="orange" />

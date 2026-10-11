@@ -307,7 +307,7 @@ export function RecipientSelector({ onConfirm }: RecipientSelectorProps) {
                         {src.label}
                       </p>
                       <p className="text-xs text-foreground-subtle mt-0.5">
-                        {src.count.toLocaleString()} record{src.count !== 1 ? "s" : ""}
+                        {(src.count ?? 0).toLocaleString()} record{(src.count ?? 0) !== 1 ? "s" : ""}
                       </p>
                     </div>
                     {active && <CheckCircle size={18} className="text-purple-glow shrink-0" />}

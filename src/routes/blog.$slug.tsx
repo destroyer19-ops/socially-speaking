@@ -4,6 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Reveal } from "@/components/Reveal";
 import { Calendar, ArrowLeft } from "lucide-react";
+import DOMPurify from "dompurify";
 
 export const Route = createFileRoute("/blog/$slug")({
   component: BlogPostPage,
@@ -74,7 +75,7 @@ function BlogPostPage() {
 
               <div 
                 className="prose prose-invert prose-lg max-w-none prose-p:text-foreground-muted prose-headings:text-white prose-headings:font-display prose-a:text-blue hover:prose-a:text-purple transition-colors"
-                dangerouslySetInnerHTML={{ __html: post.body }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.body) }}
               />
             </Reveal>
           )}

@@ -154,13 +154,13 @@ if ($dup && $dup->num_rows > 0) {
 }
 
 $stmt = $conn->prepare("INSERT INTO `$table_name` (
-    submitted_at, full_name, phone, whatsapp, email, age, gender, location, occupation, instagram,
+    submitted_at, status, full_name, phone, whatsapp, email, age, gender, location, occupation, instagram,
     volunteered_ssc, volunteered_ssc_role, volunteered_other, volunteered_other_role,
     first_choice, second_choice, department_reason, skills, willing_second_choice, willing_reassign,
     reason_volunteer, excellence_meaning, three_words, pressure_response,
     avail_conference, avail_training, avail_calltime, avail_preevent,
     emergency_name, emergency_rel, emergency_phone
-) VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+) VALUES (NOW(), 'Approved', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
 
 

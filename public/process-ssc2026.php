@@ -179,7 +179,7 @@ if ($count_res) {
     $row = $count_res->fetch_assoc();
     if ($row && $row['cnt'] == 0) {
         $defaults = [
-            [1, 'SSC 2026 Attendees 01', 1000, 'https://chat.whatsapp.com/HuuOUNSbSnyG6Fbz32DeYJ'],
+            [1, 'SSC 2026 Attendees 01', 1000, 'https://chat.whatsapp.com/EJ1DMJwBvr8JpSzhFk1btV?s=cl&p=i&mlu=4&ilr=4'],
             [2, 'SSC 2026 Attendees 02', 1000, 'https://chat.whatsapp.com/Ca7ZveBe2JX4QOXk4i1wHx'],
             [3, 'SSC 2026 Attendees 03', 1000, 'https://chat.whatsapp.com/DM6bKrrnqXgGR8QFsmOhUF'],
             [4, 'SSC 2026 Attendees 04', 1000, 'https://chat.whatsapp.com/C6CPDyEmLKC70YRuRjsxzM'],
@@ -196,12 +196,49 @@ if ($count_res) {
     }
 }
 
+
+$conn->query("CREATE TABLE IF NOT EXISTS `ssc2026_seats` (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    section VARCHAR(10) NOT NULL,
+    seat_number INT NOT NULL,
+    is_assigned TINYINT(1) NOT NULL DEFAULT 0,
+    registration_id VARCHAR(24) NULL,
+    UNIQUE KEY section_seat (section, seat_number),
+    INDEX is_assigned_idx (is_assigned)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$seat_count_res = $conn->query("SELECT COUNT(*) AS cnt FROM `ssc2026_seats`");
+if ($seat_count_res) {
+    $row = $seat_count_res->fetch_assoc();
+    if ($row && $row['cnt'] == 0) {
+        $conn->begin_transaction();
+        $sections = [
+            'A1' => 77, 'A2' => 62, 'B1' => 206, 'B2' => 172, 'C1' => 220, 'C2' => 468, 'D1' => 172, 'D2' => 210, 'E1' => 78, 'E2' => 62,
+            'V1' => 31, 'V2' => 29, 'V3' => 10, 'V4' => 28, 'V5' => 28, 'V6' => 26, 'V7' => 33, 'V8' => 34,
+            'U1' => 11, 'U2' => 53, 'U3' => 155, 'U4' => 306, 'U5' => 212, 'U6' => 206, 'U7' => 299, 'U8' => 155, 'U9' => 53, 'U10' => 11,
+            'U11' => 9, 'U12' => 9, 'U13' => 9, 'U14' => 9
+        ];
+        $ins = $conn->prepare("INSERT INTO `ssc2026_seats` (section, seat_number) VALUES (?, ?)");
+        if ($ins) {
+            foreach ($sections as $sec => $capacity) {
+                for ($i = 1; $i <= $capacity; $i++) {
+                    $ins->bind_param('si', $sec, $i);
+                    $ins->execute();
+                }
+            }
+            $ins->close();
+        }
+        $conn->commit();
+    }
+}
+
 // ── Ensure all required columns exist (safe for pre-existing tables) ──────────
 $columns_needed = [
     'state_country'      => "ALTER TABLE `$table` ADD COLUMN state_country VARCHAR(100) NOT NULL DEFAULT ''",
     'qr_code_url'        => "ALTER TABLE `$table` ADD COLUMN qr_code_url VARCHAR(500) NULL",
     'raw_payload'        => "ALTER TABLE `$table` ADD COLUMN raw_payload LONGTEXT NULL",
     'whatsapp_group_id'  => "ALTER TABLE `$table` ADD COLUMN whatsapp_group_id INT NULL",
+    'seat_allocation'    => "ALTER TABLE `$table` ADD COLUMN seat_allocation VARCHAR(50) NULL",
 ];
 foreach ($columns_needed as $col => $alter_sql) {
     $chk = $conn->query("SHOW COLUMNS FROM `$table` LIKE '$col'");
@@ -209,6 +246,10 @@ foreach ($columns_needed as $col => $alter_sql) {
         $conn->query($alter_sql);
     }
 }
+
+
+// Update WhatsApp group 1 link as requested
+$conn->query("UPDATE ssc_whatsapp_groups SET link = 'https://chat.whatsapp.com/EJ1DMJwBvr8JpSzhFk1btV?s=cl&p=i&mlu=4&ilr=4' WHERE id = 1");
 
 // ── Duplicate-email guard ─────────────────────────────────────────────────────
 $escaped_email = $conn->real_escape_string($email);
@@ -270,6 +311,16 @@ if ($groupRes && $groupRes->num_rows > 0) {
     $group_link = $group['link'];
 }
 
+
+$seat_allocation = null;
+$seat_id = null;
+$seatRes = $conn->query("SELECT id, section, seat_number FROM ssc2026_seats WHERE is_assigned = 0 ORDER BY id ASC LIMIT 1 FOR UPDATE");
+if ($seatRes && $seatRes->num_rows > 0) {
+    $seat = $seatRes->fetch_assoc();
+    $seat_id = $seat['id'];
+    $seat_allocation = $seat['section'] . '-' . $seat['seat_number'];
+}
+
 // ── Generate unique registration ID ──────────────────────────────────────────
 // Format: SSC26-XXXXXXXX  (8 uppercase hex chars)
 $reg_id = 'SSC26-' . strtoupper(bin2hex(random_bytes(4)));
@@ -277,7 +328,7 @@ $reg_id = 'SSC26-' . strtoupper(bin2hex(random_bytes(4)));
 // ── Build QR code URL ─────────────────────────────────────────────────────────
 // Uses the free, no-auth QR Server API. The QR encodes the registration ID
 // which can be scanned at the event check-in desk.
-$qr_data      = urlencode($reg_id);
+$qr_data      = urlencode($reg_id . ($seat_allocation ? "|" . $seat_allocation : ""));
 $qr_code_url  = "https://api.qrserver.com/v1/create-qr-code/?data={$qr_data}&size=300x300&format=png&margin=10";
 
 // ── Insert record ─────────────────────────────────────────────────────────────
@@ -286,9 +337,9 @@ $raw_payload = json_encode($data);
 $stmt = $conn->prepare("INSERT INTO `$table`
     (id, created_at, status, full_name, email, phone, whatsapp, age_range, gender,
      state_country, school_org, occupation, how_heard, attended_before,
-     editions_attended, hoping_to_gain, qr_code_url, raw_payload, whatsapp_group_id)
+     editions_attended, hoping_to_gain, qr_code_url, raw_payload, whatsapp_group_id, seat_allocation)
 VALUES
-    (?, NOW(), 'Pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    (?, NOW(), 'Pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
 if (!$stmt) {
     $err = $conn->error; // capture BEFORE close() — reading $conn->error after close() is fatal
@@ -304,12 +355,12 @@ if (!$stmt) {
 $group_id_str = ($group_id !== null) ? (string)$group_id : null;
 
 $stmt->bind_param(
-    'sssssssssssssssss',
+    'ssssssssssssssssss',
     $reg_id,
     $full_name, $email, $phone, $whatsapp, $age_range, $gender,
     $state_country, $school_org, $occupation, $how_heard, $attended_before,
     $editions_attended, $hoping_to_gain, $qr_code_url, $raw_payload,
-    $group_id_str
+    $group_id_str, $seat_allocation
 );
 
 if (!$stmt->execute()) {
@@ -323,6 +374,11 @@ if (!$stmt->execute()) {
     exit;
 }
 $stmt->close();
+
+
+if ($seat_id) {
+    $conn->query("UPDATE ssc2026_seats SET is_assigned = 1, registration_id = '$reg_id' WHERE id = $seat_id");
+}
 
 // ── Increment assigned counter atomically ────────────────────────────────────
 if ($group_id) {
@@ -407,10 +463,10 @@ $html_body = "
               <table cellpadding=\"0\" cellspacing=\"0\" style=\"margin-bottom:28px;\">
                 <tr>
                   <td style=\"background:linear-gradient(135deg,#7c3aed,#3b82f6);border-radius:10px;padding:1px;\">
-                    <a href=\"https://chat.whatsapp.com/ssc2026\"
-                       style=\"display:inline-block;background:#111111;border-radius:9px;padding:14px 28px;font-size:14px;font-weight:700;color:#a78bfa;text-decoration:none;\">
-                      Join the WhatsApp Community →
-                    </a>
+                      <a href=\"" . ($group_link ? htmlspecialchars($group_link) : "https://chat.whatsapp.com/EJ1DMJwBvr8JpSzhFk1btV?s=cl&p=i&mlu=4&ilr=4") . "\"
+                         style=\"display:inline-block;background:#111111;border-radius:9px;padding:14px 28px;font-size:14px;font-weight:700;color:#a78bfa;text-decoration:none;\">
+                        Join the WhatsApp Group →
+                      </a>
                   </td>
                 </tr>
               </table>
@@ -467,5 +523,6 @@ echo json_encode([
     'ok'                  => true,
     'id'                  => $reg_id,
     'qr_code_url'         => $qr_code_url,
+    'seat_allocation'     => $seat_allocation,
     'whatsapp_group_link' => $group_link,
 ]);

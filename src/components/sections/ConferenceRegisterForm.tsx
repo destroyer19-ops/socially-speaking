@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Reveal } from "@/components/Reveal";
 import { SectionLabel } from "@/components/SectionLabel";
 import { ArrowRight, Check, Send, ExternalLink } from "lucide-react";
-import tribeImg from "@/assets/ssc4.JPG";
+import tribeImg from "@/assets/ssc2026-ecard.webp";
 
 interface FormData {
   full_name: string;
@@ -43,6 +43,7 @@ const HOW_HEARD = [
   "WhatsApp",
   "Friend or Family",
   "Socially Speaking Community",
+  "Socially Speaking: Campus Chapter",
   "Church / School / Organisation",
   "Others",
 ];
@@ -295,7 +296,7 @@ export function ConferenceRegisterForm() {
       if (import.meta.env.DEV) {
         // Simulate a successful form submission in development mode
         await new Promise(resolve => setTimeout(resolve, 1000));
-        setWhatsappGroupLink("https://chat.whatsapp.com/HuuOUNSbSnyG6Fbz32DeYJ");
+        setWhatsappGroupLink("https://chat.whatsapp.com/EJ1DMJwBvr8JpSzhFk1btV?s=cl&p=i&mlu=4&ilr=4");
         setSubmitSuccess(true);
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;

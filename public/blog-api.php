@@ -23,7 +23,7 @@ if (!file_exists($config_path)) {
 }
 require $config_path;
 
-$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+$conn = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 if ($conn->connect_error) {
     ob_end_clean();
     echo json_encode(['ok' => false, 'error' => 'DB Connection failed']);
