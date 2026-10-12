@@ -12,7 +12,7 @@ import { Stories } from "@/components/sections/Stories";
 import { Journey } from "@/components/sections/Journey";
 import { JoinUs } from "@/components/sections/JoinUs";
 import { VolunteerSection } from "@/components/sections/VolunteerSection";
-import crowdImg from "@/assets/ssc2026-ecard.webp";
+import { ConferenceEcardSection } from "@/components/sections/ConferenceEcardSection";
 import popupImage from "@/assets/ssc2026-popup.jpg";
 
 export const Route = createFileRoute("/")({
@@ -61,6 +61,7 @@ function Home() {
     <main className="relative">
       <Navbar />
       <Hero />
+      <ConferenceEcardSection />
       <WhoWeAre />
       <Ecosystem />
       <SuccessPath />

@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Reveal } from "@/components/Reveal";
 import { SectionLabel } from "@/components/SectionLabel";
-import { ArrowRight, Check, Send, ExternalLink } from "lucide-react";
+import { ArrowRight, Check, Send, ExternalLink, Copy, CheckCircle2, Share2, QrCode } from "lucide-react";
 import tribeImg from "@/assets/ssc2026-ecard.webp";
 
 interface FormData {
@@ -233,6 +233,29 @@ export function ConferenceRegisterForm() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [sameAsPhone, setSameAsPhone] = useState(false);
   const [whatsappGroupLink, setWhatsappGroupLink] = useState<string | null>(null);
+  const [referralLink, setReferralLink] = useState<string>("");
+  const [referralCode, setReferralCode] = useState<string>("");
+  const [registrationId, setRegistrationId] = useState<string>("");
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+  const [copied, setCopied] = useState(false);
+
+  // Preserve first-touch referral attribution
+  useEffect(() => {
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const refParam = searchParams.get("ref");
+      if (refParam && refParam.trim()) {
+        const cleanRef = refParam.trim().toUpperCase();
+        const existingRef = localStorage.getItem("ssc_referral_code");
+        // Only set if not already set (first-touch rule)
+        if (!existingRef) {
+          localStorage.setItem("ssc_referral_code", cleanRef);
+        }
+      }
+    } catch {
+      // ignore storage access restrictions
+    }
+  }, []);
 
   function handleInput(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = e.target;
@@ -292,25 +315,64 @@ export function ConferenceRegisterForm() {
     e.preventDefault();
     if (!validate()) return;
     setIsSubmitting(true);
+
+    const refCode = localStorage.getItem("ssc_referral_code") || "";
+    const payload = {
+      ...formData,
+      ref: refCode,
+    };
+
     try {
       if (import.meta.env.DEV) {
-        // Simulate a successful form submission in development mode
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setWhatsappGroupLink("https://chat.whatsapp.com/EJ1DMJwBvr8JpSzhFk1btV?s=cl&p=i&mlu=4&ilr=4");
-        setSubmitSuccess(true);
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        return;
+        // Fallback simulation in dev environment if php-cgi is not running
+        try {
+          const testRes = await fetch("/process-ssc2026.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const testData = await testRes.json();
+          if (testData.ok) {
+            setRegistrationId(testData.id || "SSC26-DEV0001");
+            setQrCodeUrl(testData.qr_code_url || "");
+            setReferralCode(testData.referral_code || "REFDEV01");
+            setReferralLink(testData.referral_link || `${window.location.origin}/conference-register?ref=REFDEV01`);
+            setWhatsappGroupLink(testData.whatsapp_group_link || "https://chat.whatsapp.com/EJ1DMJwBvr8JpSzhFk1btV?s=cl&p=i&mlu=4&ilr=4");
+            setSubmitSuccess(true);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            return;
+          }
+        } catch {
+          // Fall through to mock in dev
+          await new Promise((resolve) => setTimeout(resolve, 800));
+          const mockRef = "REF" + Math.random().toString(36).substring(2, 8).toUpperCase();
+          const mockId = "SSC26-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+          setRegistrationId(mockId);
+          setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?data=${mockId}&size=300x300&format=png&margin=10`);
+          setReferralCode(mockRef);
+          setReferralLink(`${window.location.origin}/conference-register?ref=${mockRef}`);
+          setWhatsappGroupLink("https://chat.whatsapp.com/EJ1DMJwBvr8JpSzhFk1btV?s=cl&p=i&mlu=4&ilr=4");
+          setSubmitSuccess(true);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
       }
 
-      const res = await fetch(import.meta.env.BASE_URL + "process-ssc2026.php", {
+      const res = await fetch("/process-ssc2026.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok && !data.ok) {
         throw new Error(data.error || "Submission failed");
       }
+
+      setRegistrationId(data.id || "");
+      setQrCodeUrl(data.qr_code_url || "");
+      setReferralCode(data.referral_code || "");
+      const fullRefLink = data.referral_link || (data.referral_code ? `${window.location.origin}/conference-register?ref=${data.referral_code}` : "");
+      setReferralLink(fullRefLink);
       setWhatsappGroupLink(data.whatsapp_group_link ?? null);
       setSubmitSuccess(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -321,40 +383,118 @@ export function ConferenceRegisterForm() {
     }
   }
 
+  const handleCopyLink = () => {
+    if (!referralLink) return;
+    navigator.clipboard.writeText(referralLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
   if (submitSuccess) {
     return (
       <section className="relative min-h-screen bg-ink-deep flex items-center justify-center px-4 py-24">
-        <div className="max-w-lg mx-auto">
-          <div className="mb-8 grid h-20 w-20 place-items-center rounded-full bg-green-500/15 border border-green-500/30">
-            <Check size={36} className="text-green-400" />
+        <div className="max-w-xl mx-auto w-full text-center">
+          <div className="mb-6 mx-auto grid h-16 w-16 place-items-center rounded-full bg-green-500/15 border border-green-500/30">
+            <Check size={32} className="text-green-400" />
           </div>
           <h2 className="font-display font-black text-3xl sm:text-4xl text-white">
             Registration Successful! 🎉
           </h2>
-          <p className="mt-5 text-foreground-muted text-lg leading-relaxed">
-            You're officially registered for SSC 2026.
+          <p className="mt-3 text-foreground-muted text-base leading-relaxed">
+            You're officially registered for SSC 2026: The Takeover Generation.
           </p>
-          
-          {whatsappGroupLink ? (
-            <>
-              <p className="mt-4 text-foreground-muted leading-relaxed">
-                Join your assigned SSC 2026 Attendees WhatsApp Group to receive important event updates and announcements.
-              </p>
-              <a
-                href={whatsappGroupLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-8 btn-primary group inline-flex"
-              >
-                Join SSC 2026 Attendees
-                <ExternalLink size={16} className="ml-2" />
-              </a>
-            </>
-          ) : (
-            <p className="mt-4 text-foreground-muted leading-relaxed">
-              The attendee WhatsApp groups are currently full. Further communication will be provided through the official registration channels.
+
+          {/* Registration Details & QR Code */}
+          <div className="mt-8 glass-strong rounded-3xl p-6 sm:p-8 border border-white/10 text-left space-y-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 border-b border-white/5">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-purple-glow">Your Registration ID</span>
+                <p className="font-mono font-black text-2xl text-white tracking-wide">{registrationId}</p>
+                <p className="text-xs text-foreground-muted mt-1">Saturday, 5 December 2026</p>
+              </div>
+              {qrCodeUrl && (
+                <div className="p-2 bg-white rounded-xl shadow-lg shrink-0">
+                  <img
+                    src={qrCodeUrl}
+                    alt={`Entry QR Code for ${registrationId}`}
+                    className="w-24 h-24 object-contain"
+                  />
+                </div>
+              )}
+            </div>
+
+            <p className="text-xs text-foreground-subtle leading-relaxed">
+              A copy of your registration details, QR entry pass, and referral link has been sent to your email. Present your QR code at the desk on event day.
             </p>
-          )}
+
+            {/* Referral Mobilization Card */}
+            {referralLink && (
+              <div className="rounded-2xl bg-gradient-to-br from-purple/15 to-blue-glow/10 border border-purple/30 p-5 space-y-3">
+                <div className="flex items-center gap-2 text-purple-300">
+                  <Share2 size={16} />
+                  <span className="text-xs font-bold uppercase tracking-wider">Your Referral Link</span>
+                </div>
+                <p className="text-sm text-white font-medium">
+                  Invite friends, classmates, and colleagues to join you at SSC 2026!
+                </p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={referralLink}
+                    className="flex-1 rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-xs text-foreground font-mono truncate focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleCopyLink}
+                    className="btn-primary text-xs py-2 px-3 inline-flex items-center gap-1.5 shrink-0"
+                  >
+                    {copied ? (
+                      <>
+                        <CheckCircle2 size={14} className="text-green-300" />
+                        <span>Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={14} />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                <div className="pt-1 flex gap-2">
+                  <a
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                      `I just registered for SSC 2026: The Takeover Generation! Join me on Saturday, Dec 5, 2026. Register for free here: ${referralLink}`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-brand hover:underline inline-flex items-center gap-1"
+                  >
+                    Share directly on WhatsApp →
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {/* WhatsApp Group Join Button */}
+            {whatsappGroupLink ? (
+              <div className="pt-2">
+                <p className="text-xs text-foreground-muted mb-3">
+                  Join your assigned SSC 2026 Attendees WhatsApp Group to receive official conference announcements:
+                </p>
+                <a
+                  href={whatsappGroupLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary w-full group inline-flex justify-center items-center gap-2 py-3.5"
+                >
+                  Join SSC 2026 Attendees Group
+                  <ExternalLink size={16} />
+                </a>
+              </div>
+            ) : null}
+          </div>
         </div>
       </section>
     );

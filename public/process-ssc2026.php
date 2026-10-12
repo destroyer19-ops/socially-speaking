@@ -1,37 +1,43 @@
 <?php
 /**
- * SSC 2026 Conference Registration — PHP backend
+ * SSC 2026 Conference Registration Endpoint
  *
- * Replaces the former Supabase Edge Function.
- * Accepts a JSON POST body, stores the registration in MySQL,
- * and sends a confirmation e-mail with a QR code via Brevo.
- *
- * Endpoint: POST /process-ssc2026.php
+ * Receives JSON payload, validates, generates unique attendee ID,
+ * creates QR code, generates unique referral code, tracks referrer attribution,
+ * assigns WhatsApp group, stores in MySQL, and sends confirmation e-mail via Brevo.
  */
 
-ini_set('display_errors', 0);
-// Let the exception handler catch everything
-error_reporting(E_ALL);
-
-ob_start();
-
-set_exception_handler(function($e) {
-    ob_end_clean();
+// Global Exception & Error Handler to prevent raw 500 crashes
+set_exception_handler(function ($e) {
+    if (ob_get_length()) ob_end_clean();
     http_response_code(500);
-    echo json_encode(['ok' => false, 'error' => 'Fatal Error: ' . $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'ok' => false,
+        'error' => 'Server Error: ' . $e->getMessage(),
+        'file' => basename($e->getFile()),
+        'line' => $e->getLine()
+    ]);
     exit;
 });
-set_error_handler(function($severity, $message, $file, $line) {
-    if (!(error_reporting() & $severity)) return;
+
+set_error_handler(function ($severity, $message, $file, $line) {
+    if (!(error_reporting() & $severity)) return false;
     throw new ErrorException($message, 0, $severity, $file, $line);
 });
+
+// Capture any stray output (notices, warnings) before headers are sent
+ob_start();
+
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Pre-flight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     ob_end_clean();
     exit;
@@ -44,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// ── Load shared Brevo + DB credentials ───────────────────────────────────────
+// ── Load database configuration ──────────────────────────────────────────────
 $config_path = __DIR__ . '/db-config.php';
 if (!file_exists($config_path)) {
     ob_end_clean();
@@ -83,14 +89,14 @@ $phone           = ssc_clean($data['phone']           ?? '');
 $whatsapp        = ssc_clean($data['whatsapp']        ?? '');
 $age_range       = ssc_clean($data['age_range']       ?? '');
 $gender          = ssc_clean($data['gender']          ?? '');
-// Accept new field name state_country; fall back to old state_country for existing data
-$state_country   = ssc_clean($data['state_country']   ?? $data['state_country'] ?? '');
+$state_country   = ssc_clean($data['state_country']   ?? $data['city_state'] ?? '');
 $school_org      = ssc_clean($data['school_org']      ?? '');
 $occupation      = ssc_clean($data['occupation']      ?? '');
 $how_heard       = ssc_clean($data['how_heard']       ?? '');
 $attended_before = ssc_clean($data['attended_before'] ?? '');
 $editions_attended = ssc_clean_arr($data['editions_attended'] ?? []);
 $hoping_to_gain  = ssc_clean($data['hoping_to_gain'] ?? '');
+$incoming_ref    = ssc_clean($data['ref'] ?? $data['referral_code'] ?? '');
 
 // ── Server-side validation ────────────────────────────────────────────────────
 $required = [
@@ -137,9 +143,11 @@ if ($conn->connect_errno) {
 }
 $conn->set_charset('utf8mb4');
 
-$table = TABLE_PREFIX . 'ssc2026_registrations';
+$table_prefix = defined('TABLE_PREFIX') ? TABLE_PREFIX : '';
+$table = $table_prefix . 'ssc2026_registrations';
+$mob_table = $table_prefix . 'ssc2026_mobilizers';
 
-// ── Ensure table exists ───────────────────────────────────────────────────────
+// ── Ensure tables exist ───────────────────────────────────────────────────────
 $conn->query("CREATE TABLE IF NOT EXISTS `$table` (
     id             VARCHAR(24)   NOT NULL,
     created_at     DATETIME      NOT NULL,
@@ -150,7 +158,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS `$table` (
     whatsapp       VARCHAR(50)   NOT NULL,
     age_range      VARCHAR(20)   NOT NULL,
     gender         VARCHAR(20)   NOT NULL,
-    state_country     VARCHAR(100)  NOT NULL,
+    state_country  VARCHAR(100)  NOT NULL DEFAULT '',
     school_org     VARCHAR(200)  NOT NULL,
     occupation     VARCHAR(50)   NOT NULL,
     how_heard      VARCHAR(100)  NOT NULL,
@@ -159,8 +167,30 @@ $conn->query("CREATE TABLE IF NOT EXISTS `$table` (
     hoping_to_gain TEXT          NOT NULL,
     qr_code_url    VARCHAR(500)  NULL,
     raw_payload    LONGTEXT      NULL,
+    whatsapp_group_id INT        NULL,
+    referral_code  VARCHAR(32)   NULL,
+    referred_by_code VARCHAR(32) NULL,
+    checked_in_at  DATETIME      NULL,
+    checked_in_by  VARCHAR(100)  NULL,
     PRIMARY KEY (id),
     UNIQUE KEY email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$conn->query("CREATE TABLE IF NOT EXISTS `$mob_table` (
+    id             INT AUTO_INCREMENT PRIMARY KEY,
+    created_at     DATETIME      NOT NULL,
+    full_name      VARCHAR(200)  NOT NULL,
+    email          VARCHAR(200)  NOT NULL,
+    phone          VARCHAR(50)   NOT NULL,
+    organization   VARCHAR(200)  NOT NULL,
+    referral_code  VARCHAR(32)   NOT NULL,
+    auth_token     VARCHAR(64)   NOT NULL,
+    status         VARCHAR(50)   NOT NULL DEFAULT 'active',
+    UNIQUE KEY uniq_mobilizer_email (email),
+    UNIQUE KEY uniq_mobilizer_ref_code (referral_code),
+    UNIQUE KEY uniq_mobilizer_token (auth_token),
+    INDEX idx_mobilizer_org (organization),
+    INDEX idx_mobilizer_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
 $conn->query("CREATE TABLE IF NOT EXISTS `ssc_whatsapp_groups` (
@@ -173,7 +203,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS `ssc_whatsapp_groups` (
     sort_order INT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-// Seed defaults if empty
+// Seed WhatsApp groups defaults if empty
 $count_res = $conn->query("SELECT COUNT(*) AS cnt FROM `ssc_whatsapp_groups`");
 if ($count_res) {
     $row = $count_res->fetch_assoc();
@@ -196,49 +226,16 @@ if ($count_res) {
     }
 }
 
-
-$conn->query("CREATE TABLE IF NOT EXISTS `ssc2026_seats` (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    section VARCHAR(10) NOT NULL,
-    seat_number INT NOT NULL,
-    is_assigned TINYINT(1) NOT NULL DEFAULT 0,
-    registration_id VARCHAR(24) NULL,
-    UNIQUE KEY section_seat (section, seat_number),
-    INDEX is_assigned_idx (is_assigned)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-
-$seat_count_res = $conn->query("SELECT COUNT(*) AS cnt FROM `ssc2026_seats`");
-if ($seat_count_res) {
-    $row = $seat_count_res->fetch_assoc();
-    if ($row && $row['cnt'] == 0) {
-        $conn->begin_transaction();
-        $sections = [
-            'A1' => 77, 'A2' => 62, 'B1' => 206, 'B2' => 172, 'C1' => 220, 'C2' => 468, 'D1' => 172, 'D2' => 210, 'E1' => 78, 'E2' => 62,
-            'V1' => 31, 'V2' => 29, 'V3' => 10, 'V4' => 28, 'V5' => 28, 'V6' => 26, 'V7' => 33, 'V8' => 34,
-            'U1' => 11, 'U2' => 53, 'U3' => 155, 'U4' => 306, 'U5' => 212, 'U6' => 206, 'U7' => 299, 'U8' => 155, 'U9' => 53, 'U10' => 11,
-            'U11' => 9, 'U12' => 9, 'U13' => 9, 'U14' => 9
-        ];
-        $ins = $conn->prepare("INSERT INTO `ssc2026_seats` (section, seat_number) VALUES (?, ?)");
-        if ($ins) {
-            foreach ($sections as $sec => $capacity) {
-                for ($i = 1; $i <= $capacity; $i++) {
-                    $ins->bind_param('si', $sec, $i);
-                    $ins->execute();
-                }
-            }
-            $ins->close();
-        }
-        $conn->commit();
-    }
-}
-
-// ── Ensure all required columns exist (safe for pre-existing tables) ──────────
+// ── Ensure all required columns and indexes exist ─────────────────────────────
 $columns_needed = [
-    'state_country'      => "ALTER TABLE `$table` ADD COLUMN state_country VARCHAR(100) NOT NULL DEFAULT ''",
-    'qr_code_url'        => "ALTER TABLE `$table` ADD COLUMN qr_code_url VARCHAR(500) NULL",
-    'raw_payload'        => "ALTER TABLE `$table` ADD COLUMN raw_payload LONGTEXT NULL",
-    'whatsapp_group_id'  => "ALTER TABLE `$table` ADD COLUMN whatsapp_group_id INT NULL",
-    'seat_allocation'    => "ALTER TABLE `$table` ADD COLUMN seat_allocation VARCHAR(50) NULL",
+    'state_country'    => "ALTER TABLE `$table` ADD COLUMN state_country VARCHAR(100) NOT NULL DEFAULT ''",
+    'qr_code_url'      => "ALTER TABLE `$table` ADD COLUMN qr_code_url VARCHAR(500) NULL",
+    'raw_payload'      => "ALTER TABLE `$table` ADD COLUMN raw_payload LONGTEXT NULL",
+    'whatsapp_group_id'=> "ALTER TABLE `$table` ADD COLUMN whatsapp_group_id INT NULL",
+    'referral_code'    => "ALTER TABLE `$table` ADD COLUMN referral_code VARCHAR(32) NULL",
+    'referred_by_code' => "ALTER TABLE `$table` ADD COLUMN referred_by_code VARCHAR(32) NULL",
+    'checked_in_at'    => "ALTER TABLE `$table` ADD COLUMN checked_in_at DATETIME NULL",
+    'checked_in_by'    => "ALTER TABLE `$table` ADD COLUMN checked_in_by VARCHAR(100) NULL",
 ];
 foreach ($columns_needed as $col => $alter_sql) {
     $chk = $conn->query("SHOW COLUMNS FROM `$table` LIKE '$col'");
@@ -247,18 +244,32 @@ foreach ($columns_needed as $col => $alter_sql) {
     }
 }
 
-
 // Update WhatsApp group 1 link as requested
 $conn->query("UPDATE ssc_whatsapp_groups SET link = 'https://chat.whatsapp.com/EJ1DMJwBvr8JpSzhFk1btV?s=cl&p=i&mlu=4&ilr=4' WHERE id = 1");
 
-// ── Duplicate-email guard ─────────────────────────────────────────────────────
+// Determine host & base referral domain
+$is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+$http_proto = $is_https ? 'https://' : 'https://';
+$host = $_SERVER['HTTP_HOST'] ?? 'thetakeovernetwork.org';
+$base_domain = $http_proto . $host;
+
+// ── Duplicate-email / phone guard ─────────────────────────────────────────────
 $escaped_email = $conn->real_escape_string($email);
 $escaped_phone = $conn->real_escape_string($phone);
-$dup = $conn->query("SELECT id, whatsapp_group_id FROM `$table` WHERE email = '$escaped_email' OR phone = '$escaped_phone' LIMIT 1");
+$dup = $conn->query("SELECT id, whatsapp_group_id, referral_code, qr_code_url FROM `$table` WHERE email = '$escaped_email' OR phone = '$escaped_phone' LIMIT 1");
 if ($dup && $dup->num_rows > 0) {
     $row = $dup->fetch_assoc();
     $group_link = null;
     $existing_reg_id = $row['id'] ?? null;
+    $existing_ref_code = $row['referral_code'] ?? null;
+    $existing_qr = $row['qr_code_url'] ?? null;
+
+    // If existing registration lacks a referral code, generate one now
+    if (empty($existing_ref_code)) {
+        $existing_ref_code = 'REF' . strtoupper(bin2hex(random_bytes(3)));
+        $conn->query("UPDATE `$table` SET referral_code = '$existing_ref_code' WHERE id = '$existing_reg_id'");
+    }
+    $existing_ref_url = $base_domain . '/conference-register?ref=' . $existing_ref_code;
     
     if (!empty($row['whatsapp_group_id'])) {
         $gid = (int)$row['whatsapp_group_id'];
@@ -268,18 +279,13 @@ if ($dup && $dup->num_rows > 0) {
             $group_link = $gRow['link'];
         }
     } else if ($existing_reg_id) {
-        // They are registered but have no group (e.g. registered before groups were set up)
-        // Let's assign them one now.
         $conn->begin_transaction();
         $groupRes = $conn->query("SELECT id, link FROM ssc_whatsapp_groups WHERE active = 1 AND assigned < capacity ORDER BY sort_order ASC, id ASC LIMIT 1 FOR UPDATE");
         if ($groupRes && $groupRes->num_rows > 0) {
             $group = $groupRes->fetch_assoc();
             $new_gid = $group['id'];
             $group_link = $group['link'];
-            
-            // Update their registration with the new group
             $conn->query("UPDATE `$table` SET whatsapp_group_id = $new_gid WHERE id = '$existing_reg_id'");
-            // Increment assigned count
             $conn->query("UPDATE ssc_whatsapp_groups SET assigned = assigned + 1 WHERE id = $new_gid");
         }
         $conn->commit();
@@ -287,23 +293,61 @@ if ($dup && $dup->num_rows > 0) {
     
     $conn->close();
     ob_end_clean();
-    // Return 200 so the frontend can show the success CTA rather than a generic error.
     http_response_code(200);
     echo json_encode([
-        'ok' => true, 
-        'isDuplicate' => true, 
+        'ok'                  => true, 
+        'isDuplicate'         => true, 
+        'id'                  => $existing_reg_id,
+        'qr_code_url'         => $existing_qr,
+        'referral_code'       => $existing_ref_code,
+        'referral_link'       => $existing_ref_url,
         'whatsapp_group_link' => $group_link,
-        'message' => 'This email address or phone number is already registered for SSC 2026.'
+        'message'             => 'This email address or phone number is already registered for SSC 2026.'
     ]);
     exit;
 }
+
+// ── Validate Referrer Attribution (Server-side) ──────────────────────────────
+$valid_referred_by = null;
+if (!empty($incoming_ref)) {
+    $escaped_ref = $conn->real_escape_string($incoming_ref);
+    
+    // Check mobilizers table first
+    $ref_query = $conn->query("SELECT email, phone FROM `$mob_table` WHERE referral_code = '$escaped_ref' AND status = 'active' LIMIT 1");
+    if (!$ref_query || $ref_query->num_rows === 0) {
+        // Check attendee registrations table
+        $ref_query = $conn->query("SELECT email, phone FROM `$table` WHERE referral_code = '$escaped_ref' LIMIT 1");
+    }
+    
+    if ($ref_query && $ref_query->num_rows > 0) {
+        $ref_owner = $ref_query->fetch_assoc();
+        // Prevent self-referral
+        if (strcasecmp($ref_owner['email'], $email) !== 0 && $ref_owner['phone'] !== $phone) {
+            $valid_referred_by = $escaped_ref;
+        }
+    }
+}
+
+// ── Generate Unique Referral Code for New Attendee ───────────────────────────
+$attendee_ref_code = null;
+for ($attempt = 0; $attempt < 10; $attempt++) {
+    $candidate = 'REF' . strtoupper(bin2hex(random_bytes(3)));
+    $chk_dup = $conn->query("SELECT 1 FROM `$table` WHERE referral_code = '$candidate' UNION SELECT 1 FROM `$mob_table` WHERE referral_code = '$candidate' LIMIT 1");
+    if (!$chk_dup || $chk_dup->num_rows === 0) {
+        $attendee_ref_code = $candidate;
+        break;
+    }
+}
+if (!$attendee_ref_code) {
+    $attendee_ref_code = 'REF' . strtoupper(bin2hex(random_bytes(4)));
+}
+$referral_url = $base_domain . '/conference-register?ref=' . $attendee_ref_code;
 
 // ── WhatsApp Group Allocation (Transaction) ──────────────────────────────────
 $conn->begin_transaction();
 
 $group_id = null;
 $group_link = null;
-// SELECT ... FOR UPDATE locks the rows until we commit, preventing concurrent overbooking
 $groupRes = $conn->query("SELECT id, link FROM ssc_whatsapp_groups WHERE active = 1 AND assigned < capacity ORDER BY sort_order ASC, id ASC LIMIT 1 FOR UPDATE");
 if ($groupRes && $groupRes->num_rows > 0) {
     $group = $groupRes->fetch_assoc();
@@ -311,24 +355,12 @@ if ($groupRes && $groupRes->num_rows > 0) {
     $group_link = $group['link'];
 }
 
-
-$seat_allocation = null;
-$seat_id = null;
-$seatRes = $conn->query("SELECT id, section, seat_number FROM ssc2026_seats WHERE is_assigned = 0 ORDER BY id ASC LIMIT 1 FOR UPDATE");
-if ($seatRes && $seatRes->num_rows > 0) {
-    $seat = $seatRes->fetch_assoc();
-    $seat_id = $seat['id'];
-    $seat_allocation = $seat['section'] . '-' . $seat['seat_number'];
-}
-
 // ── Generate unique registration ID ──────────────────────────────────────────
 // Format: SSC26-XXXXXXXX  (8 uppercase hex chars)
 $reg_id = 'SSC26-' . strtoupper(bin2hex(random_bytes(4)));
 
-// ── Build QR code URL ─────────────────────────────────────────────────────────
-// Uses the free, no-auth QR Server API. The QR encodes the registration ID
-// which can be scanned at the event check-in desk.
-$qr_data      = urlencode($reg_id . ($seat_allocation ? "|" . $seat_allocation : ""));
+// ── Build QR code URL (Clean attendee identifier, no seat data) ───────────────
+$qr_data      = urlencode($reg_id);
 $qr_code_url  = "https://api.qrserver.com/v1/create-qr-code/?data={$qr_data}&size=300x300&format=png&margin=10";
 
 // ── Insert record ─────────────────────────────────────────────────────────────
@@ -337,12 +369,12 @@ $raw_payload = json_encode($data);
 $stmt = $conn->prepare("INSERT INTO `$table`
     (id, created_at, status, full_name, email, phone, whatsapp, age_range, gender,
      state_country, school_org, occupation, how_heard, attended_before,
-     editions_attended, hoping_to_gain, qr_code_url, raw_payload, whatsapp_group_id, seat_allocation)
+     editions_attended, hoping_to_gain, qr_code_url, raw_payload, whatsapp_group_id, referral_code, referred_by_code)
 VALUES
-    (?, NOW(), 'Pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    (?, NOW(), 'Pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
 if (!$stmt) {
-    $err = $conn->error; // capture BEFORE close() — reading $conn->error after close() is fatal
+    $err = $conn->error;
     $conn->rollback();
     $conn->close();
     ob_end_clean();
@@ -351,16 +383,15 @@ if (!$stmt) {
     exit;
 }
 
-// Convert group_id to string — binding null as 'i' (int) causes TypeError in PHP 8
 $group_id_str = ($group_id !== null) ? (string)$group_id : null;
 
 $stmt->bind_param(
-    'ssssssssssssssssss',
+    'ssssssssssssssssssss',
     $reg_id,
     $full_name, $email, $phone, $whatsapp, $age_range, $gender,
     $state_country, $school_org, $occupation, $how_heard, $attended_before,
     $editions_attended, $hoping_to_gain, $qr_code_url, $raw_payload,
-    $group_id_str, $seat_allocation
+    $group_id_str, $attendee_ref_code, $valid_referred_by
 );
 
 if (!$stmt->execute()) {
@@ -375,12 +406,7 @@ if (!$stmt->execute()) {
 }
 $stmt->close();
 
-
-if ($seat_id) {
-    $conn->query("UPDATE ssc2026_seats SET is_assigned = 1, registration_id = '$reg_id' WHERE id = $seat_id");
-}
-
-// ── Increment assigned counter atomically ────────────────────────────────────
+// ── Increment WhatsApp assigned counter ──────────────────────────────────────
 if ($group_id) {
     $conn->query("UPDATE ssc_whatsapp_groups SET assigned = assigned + 1 WHERE id = $group_id");
 }
@@ -388,134 +414,47 @@ $conn->commit();
 $conn->close();
 
 // ── Send confirmation e-mail via Brevo ────────────────────────────────────────
-$first_name = explode(' ', $full_name)[0];
+require_once __DIR__ . '/email-templates.php';
 
-$html_body = "
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset=\"utf-8\">
-  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
-</head>
-<body style=\"margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;\">
-  <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#0a0a0a;padding:40px 0;\">
-    <tr>
-      <td align=\"center\">
-        <table width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:600px;width:100%;\">
-
-          <!-- Header -->
-          <tr>
-            <td style=\"background:linear-gradient(135deg,#7c3aed 0%,#3b82f6 100%);border-radius:16px 16px 0 0;padding:40px 40px 32px;text-align:center;\">
-              <p style=\"margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:rgba(255,255,255,0.7);\">Socially Speaking Conference</p>
-              <h1 style=\"margin:0;font-size:32px;font-weight:900;color:#ffffff;line-height:1.1;\">You're Registered! 🎉</h1>
-              <p style=\"margin:12px 0 0;font-size:16px;color:rgba(255,255,255,0.85);\">SSC 2026 — The Takeover Generation</p>
-              <p style=\"margin:6px 0 0;font-size:14px;color:rgba(255,255,255,0.65);\">Saturday, 5 December 2026</p>
-            </td>
-          </tr>
-
-          <!-- Body -->
-          <tr>
-            <td style=\"background:#111111;padding:36px 40px;\">
-              <p style=\"margin:0 0 16px;font-size:16px;color:#e5e5e5;\">Hi <strong style=\"color:#a78bfa;\">" . htmlspecialchars($first_name) . "</strong>,</p>
-              <p style=\"margin:0 0 16px;font-size:15px;color:#d4d4d4;line-height:1.7;\">Thank you for registering for the <strong style=\"color:#ffffff;\">Socially Speaking Conference 2026</strong>. We are thrilled to have you join us for <em>The Takeover Generation</em>.</p>
-              <p style=\"margin:0 0 28px;font-size:15px;color:#d4d4d4;line-height:1.7;\">Your registration has been successfully received and a spot has been reserved for you. Keep this email safe — your personal QR code below is your entry pass on the day of the event.</p>
-
-              <!-- Registration ID -->
-              <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"margin-bottom:28px;\">
-                <tr>
-                  <td style=\"background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:20px;text-align:center;\">
-                    <p style=\"margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#737373;\">Your Registration ID</p>
-                    <p style=\"margin:0;font-size:22px;font-weight:900;color:#a78bfa;letter-spacing:0.08em;font-family:monospace;\">" . htmlspecialchars($reg_id) . "</p>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- QR Code -->
-              <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"margin-bottom:28px;\">
-                <tr>
-                  <td style=\"background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:28px;text-align:center;\">
-                    <p style=\"margin:0 0 16px;font-size:13px;font-weight:600;color:#a3a3a3;text-transform:uppercase;letter-spacing:0.12em;\">Your Entry QR Code</p>
-                    <img src=\"" . htmlspecialchars($qr_code_url) . "\"
-                         alt=\"Your entry QR code — " . htmlspecialchars($reg_id) . "\"
-                         width=\"200\" height=\"200\"
-                         style=\"display:block;margin:0 auto;border-radius:8px;background:#ffffff;padding:8px;\">
-                    <p style=\"margin:14px 0 0;font-size:12px;color:#737373;\">Present this QR code at the registration desk on event day.</p>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Details summary -->
-              <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"margin-bottom:28px;\">
-                <tr>
-                  <td style=\"background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:20px;\">
-                    <p style=\"margin:0 0 14px;font-size:12px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#737373;\">Registration Summary</p>
-                    <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">
-                      <tr><td style=\"padding:6px 0;font-size:13px;color:#737373;width:40%;\">Name</td><td style=\"padding:6px 0;font-size:13px;color:#e5e5e5;font-weight:600;\">" . htmlspecialchars($full_name) . "</td></tr>
-                      <tr><td style=\"padding:6px 0;font-size:13px;color:#737373;\">Email</td><td style=\"padding:6px 0;font-size:13px;color:#e5e5e5;\">" . htmlspecialchars($email) . "</td></tr>
-                      <tr><td style=\"padding:6px 0;font-size:13px;color:#737373;\">State / Country</td><td style=\"padding:6px 0;font-size:13px;color:#e5e5e5;\">" . htmlspecialchars($state_country) . "</td></tr>
-                      <tr><td style=\"padding:6px 0;font-size:13px;color:#737373;\">Status</td><td style=\"padding:6px 0;font-size:13px;\"><span style=\"background:#7c3aed22;color:#a78bfa;border-radius:6px;padding:2px 10px;font-size:12px;font-weight:700;\">Registered</span></td></tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-
-              <p style=\"margin:0 0 16px;font-size:15px;color:#d4d4d4;line-height:1.7;\">To receive important conference updates, announcements, and information leading up to the event, join the official SSC 2026 WhatsApp community:</p>
-              <table cellpadding=\"0\" cellspacing=\"0\" style=\"margin-bottom:28px;\">
-                <tr>
-                  <td style=\"background:linear-gradient(135deg,#7c3aed,#3b82f6);border-radius:10px;padding:1px;\">
-                      <a href=\"" . ($group_link ? htmlspecialchars($group_link) : "https://chat.whatsapp.com/EJ1DMJwBvr8JpSzhFk1btV?s=cl&p=i&mlu=4&ilr=4") . "\"
-                         style=\"display:inline-block;background:#111111;border-radius:9px;padding:14px 28px;font-size:14px;font-weight:700;color:#a78bfa;text-decoration:none;\">
-                        Join the WhatsApp Group →
-                      </a>
-                  </td>
-                </tr>
-              </table>
-
-              <p style=\"margin:0;font-size:14px;color:#737373;line-height:1.7;\">If you have any questions, reach us on Instagram at <a href=\"https://instagram.com/sociallyspeaking.tribe\" style=\"color:#a78bfa;text-decoration:none;\">@sociallyspeaking.tribe</a>.</p>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style=\"background:#0d0d0d;border-radius:0 0 16px 16px;padding:24px 40px;text-align:center;border-top:1px solid #1f1f1f;\">
-              <p style=\"margin:0 0 6px;font-size:13px;font-weight:700;color:#ffffff;\">Socially Speaking</p>
-              <p style=\"margin:0;font-size:12px;color:#525252;\">© 2026 Socially Speaking. All rights reserved.</p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-";
+$rendered_email = SSCEmailTemplates::attendeeConfirmation([
+    'full_name'     => $full_name,
+    'email'         => $email,
+    'reg_id'        => $reg_id,
+    'state_country' => $state_country,
+    'qr_code_url'   => $qr_code_url,
+    'referral_code' => $attendee_ref_code,
+    'referral_url'  => $referral_url,
+    'whatsapp_link' => $group_link ?: 'https://chat.whatsapp.com/EJ1DMJwBvr8JpSzhFk1btV?s=cl&p=i&mlu=4&ilr=4',
+]);
 
 // Send via Brevo
-$brevo_payload = json_encode([
-    'sender' => [
-        'name'  => BREVO_SENDER_NAME,
-        'email' => BREVO_SENDER_EMAIL,
-    ],
-    'to' => [[
-        'email' => $email,
-        'name'  => $full_name,
-    ]],
-    'subject'     => 'You\'re registered for SSC 2026 — The Takeover Generation 🎉',
-    'htmlContent' => $html_body,
-]);
+if (defined('BREVO_API_KEY') && !empty(BREVO_API_KEY)) {
+    $brevo_payload = json_encode([
+        'sender' => [
+            'name'  => defined('BREVO_SENDER_NAME') ? BREVO_SENDER_NAME : 'Socially Speaking',
+            'email' => defined('BREVO_SENDER_EMAIL') ? BREVO_SENDER_EMAIL : 'hello@thetakeover2025.com',
+        ],
+        'to' => [[
+            'email' => $email,
+            'name'  => $full_name,
+        ]],
+        'subject'     => 'You\'re registered for SSC 2026 — The Takeover Generation 🎉',
+        'htmlContent' => $rendered_email['html'],
+        'textContent' => $rendered_email['plain'],
+    ]);
 
-$ch = curl_init('https://api.brevo.com/v3/smtp/email');
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, $brevo_payload);
-curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    'accept: application/json',
-    'api-key: ' . BREVO_API_KEY,
-    'content-type: application/json',
-]);
-curl_exec($ch);
-curl_close($ch);
+    $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $brevo_payload);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'accept: application/json',
+        'api-key: ' . BREVO_API_KEY,
+        'content-type: application/json',
+    ]);
+    curl_exec($ch);
+    curl_close($ch);
+}
 
 // ── Respond ───────────────────────────────────────────────────────────────────
 ob_end_clean();
@@ -523,6 +462,7 @@ echo json_encode([
     'ok'                  => true,
     'id'                  => $reg_id,
     'qr_code_url'         => $qr_code_url,
-    'seat_allocation'     => $seat_allocation,
+    'referral_code'       => $attendee_ref_code,
+    'referral_link'       => $referral_url,
     'whatsapp_group_link' => $group_link,
 ]);

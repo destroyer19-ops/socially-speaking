@@ -13,12 +13,15 @@ import { Route as VolunteerRouteImport } from './routes/volunteer'
 import { Route as TribeRouteImport } from './routes/tribe'
 import { Route as TakeoverTableRouteImport } from './routes/takeover-table'
 import { Route as OutreachRouteImport } from './routes/outreach'
+import { Route as MobilizerDashboardRouteImport } from './routes/mobilizer-dashboard'
+import { Route as MobilizeRouteImport } from './routes/mobilize'
 import { Route as MediaRouteImport } from './routes/media'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as ImpactRouteImport } from './routes/impact'
 import { Route as FirstClassFormulaRouteImport } from './routes/first-class-formula'
 import { Route as ConferenceRegisterRouteImport } from './routes/conference-register'
 import { Route as ConferenceRouteImport } from './routes/conference'
+import { Route as CheckinRouteImport } from './routes/checkin'
 import { Route as CampusRegisterRouteImport } from './routes/campus-register'
 import { Route as CampusRouteImport } from './routes/campus'
 import { Route as BlogRouteImport } from './routes/blog'
@@ -44,6 +47,16 @@ const TakeoverTableRoute = TakeoverTableRouteImport.update({
 const OutreachRoute = OutreachRouteImport.update({
   id: '/outreach',
   path: '/outreach',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MobilizerDashboardRoute = MobilizerDashboardRouteImport.update({
+  id: '/mobilizer-dashboard',
+  path: '/mobilizer-dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MobilizeRoute = MobilizeRouteImport.update({
+  id: '/mobilize',
+  path: '/mobilize',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MediaRoute = MediaRouteImport.update({
@@ -74,6 +87,11 @@ const ConferenceRegisterRoute = ConferenceRegisterRouteImport.update({
 const ConferenceRoute = ConferenceRouteImport.update({
   id: '/conference',
   path: '/conference',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckinRoute = CheckinRouteImport.update({
+  id: '/checkin',
+  path: '/checkin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CampusRegisterRoute = CampusRegisterRouteImport.update({
@@ -113,12 +131,15 @@ export interface FileRoutesByFullPath {
   '/blog': typeof BlogRouteWithChildren
   '/campus': typeof CampusRoute
   '/campus-register': typeof CampusRegisterRoute
+  '/checkin': typeof CheckinRoute
   '/conference': typeof ConferenceRoute
   '/conference-register': typeof ConferenceRegisterRoute
   '/first-class-formula': typeof FirstClassFormulaRoute
   '/impact': typeof ImpactRoute
   '/join': typeof JoinRoute
   '/media': typeof MediaRoute
+  '/mobilize': typeof MobilizeRoute
+  '/mobilizer-dashboard': typeof MobilizerDashboardRoute
   '/outreach': typeof OutreachRoute
   '/takeover-table': typeof TakeoverTableRoute
   '/tribe': typeof TribeRoute
@@ -131,12 +152,15 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogRouteWithChildren
   '/campus': typeof CampusRoute
   '/campus-register': typeof CampusRegisterRoute
+  '/checkin': typeof CheckinRoute
   '/conference': typeof ConferenceRoute
   '/conference-register': typeof ConferenceRegisterRoute
   '/first-class-formula': typeof FirstClassFormulaRoute
   '/impact': typeof ImpactRoute
   '/join': typeof JoinRoute
   '/media': typeof MediaRoute
+  '/mobilize': typeof MobilizeRoute
+  '/mobilizer-dashboard': typeof MobilizerDashboardRoute
   '/outreach': typeof OutreachRoute
   '/takeover-table': typeof TakeoverTableRoute
   '/tribe': typeof TribeRoute
@@ -150,12 +174,15 @@ export interface FileRoutesById {
   '/blog': typeof BlogRouteWithChildren
   '/campus': typeof CampusRoute
   '/campus-register': typeof CampusRegisterRoute
+  '/checkin': typeof CheckinRoute
   '/conference': typeof ConferenceRoute
   '/conference-register': typeof ConferenceRegisterRoute
   '/first-class-formula': typeof FirstClassFormulaRoute
   '/impact': typeof ImpactRoute
   '/join': typeof JoinRoute
   '/media': typeof MediaRoute
+  '/mobilize': typeof MobilizeRoute
+  '/mobilizer-dashboard': typeof MobilizerDashboardRoute
   '/outreach': typeof OutreachRoute
   '/takeover-table': typeof TakeoverTableRoute
   '/tribe': typeof TribeRoute
@@ -170,12 +197,15 @@ export interface FileRouteTypes {
     | '/blog'
     | '/campus'
     | '/campus-register'
+    | '/checkin'
     | '/conference'
     | '/conference-register'
     | '/first-class-formula'
     | '/impact'
     | '/join'
     | '/media'
+    | '/mobilize'
+    | '/mobilizer-dashboard'
     | '/outreach'
     | '/takeover-table'
     | '/tribe'
@@ -188,12 +218,15 @@ export interface FileRouteTypes {
     | '/blog'
     | '/campus'
     | '/campus-register'
+    | '/checkin'
     | '/conference'
     | '/conference-register'
     | '/first-class-formula'
     | '/impact'
     | '/join'
     | '/media'
+    | '/mobilize'
+    | '/mobilizer-dashboard'
     | '/outreach'
     | '/takeover-table'
     | '/tribe'
@@ -206,12 +239,15 @@ export interface FileRouteTypes {
     | '/blog'
     | '/campus'
     | '/campus-register'
+    | '/checkin'
     | '/conference'
     | '/conference-register'
     | '/first-class-formula'
     | '/impact'
     | '/join'
     | '/media'
+    | '/mobilize'
+    | '/mobilizer-dashboard'
     | '/outreach'
     | '/takeover-table'
     | '/tribe'
@@ -225,12 +261,15 @@ export interface RootRouteChildren {
   BlogRoute: typeof BlogRouteWithChildren
   CampusRoute: typeof CampusRoute
   CampusRegisterRoute: typeof CampusRegisterRoute
+  CheckinRoute: typeof CheckinRoute
   ConferenceRoute: typeof ConferenceRoute
   ConferenceRegisterRoute: typeof ConferenceRegisterRoute
   FirstClassFormulaRoute: typeof FirstClassFormulaRoute
   ImpactRoute: typeof ImpactRoute
   JoinRoute: typeof JoinRoute
   MediaRoute: typeof MediaRoute
+  MobilizeRoute: typeof MobilizeRoute
+  MobilizerDashboardRoute: typeof MobilizerDashboardRoute
   OutreachRoute: typeof OutreachRoute
   TakeoverTableRoute: typeof TakeoverTableRoute
   TribeRoute: typeof TribeRoute
@@ -265,6 +304,20 @@ declare module '@tanstack/react-router' {
       path: '/outreach'
       fullPath: '/outreach'
       preLoaderRoute: typeof OutreachRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mobilizer-dashboard': {
+      id: '/mobilizer-dashboard'
+      path: '/mobilizer-dashboard'
+      fullPath: '/mobilizer-dashboard'
+      preLoaderRoute: typeof MobilizerDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mobilize': {
+      id: '/mobilize'
+      path: '/mobilize'
+      fullPath: '/mobilize'
+      preLoaderRoute: typeof MobilizeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/media': {
@@ -307,6 +360,13 @@ declare module '@tanstack/react-router' {
       path: '/conference'
       fullPath: '/conference'
       preLoaderRoute: typeof ConferenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkin': {
+      id: '/checkin'
+      path: '/checkin'
+      fullPath: '/checkin'
+      preLoaderRoute: typeof CheckinRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/campus-register': {
@@ -370,12 +430,15 @@ const rootRouteChildren: RootRouteChildren = {
   BlogRoute: BlogRouteWithChildren,
   CampusRoute: CampusRoute,
   CampusRegisterRoute: CampusRegisterRoute,
+  CheckinRoute: CheckinRoute,
   ConferenceRoute: ConferenceRoute,
   ConferenceRegisterRoute: ConferenceRegisterRoute,
   FirstClassFormulaRoute: FirstClassFormulaRoute,
   ImpactRoute: ImpactRoute,
   JoinRoute: JoinRoute,
   MediaRoute: MediaRoute,
+  MobilizeRoute: MobilizeRoute,
+  MobilizerDashboardRoute: MobilizerDashboardRoute,
   OutreachRoute: OutreachRoute,
   TakeoverTableRoute: TakeoverTableRoute,
   TribeRoute: TribeRoute,
