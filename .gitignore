@@ -33,3 +33,6 @@ dist-ssr
 dist.zip
 *.mp4
 public/db-config.php
+.env
+.env.*
+.env.local
