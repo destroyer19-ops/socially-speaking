@@ -109,7 +109,7 @@ function MobilizerRegisterPage() {
         }
       }
 
-      const res = await fetch("/process-mobilizer.php", {
+      const res = await fetch((import.meta.env.BASE_URL || "/") + "process-mobilizer.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -137,7 +137,7 @@ function MobilizerRegisterPage() {
     setErrors({});
 
     try {
-      const res = await fetch("/process-mobilizer.php", {
+      const res = await fetch((import.meta.env.BASE_URL || "/") + "process-mobilizer.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "recover", email: recoverEmail.trim() }),

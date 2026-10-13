@@ -190,7 +190,7 @@ function CheckInPage() {
         }
       }
 
-      const res = await fetch("/checkin.php", {
+      const res = await fetch((import.meta.env.BASE_URL || "/") + "checkin.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

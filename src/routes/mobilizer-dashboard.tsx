@@ -135,7 +135,7 @@ function MobilizerDashboardPage() {
           }
         }
 
-        const res = await fetch(`/mobilizer-api.php?token=${encodeURIComponent(token)}`);
+        const res = await fetch((import.meta.env.BASE_URL || "/") + `mobilizer-api.php?token=${encodeURIComponent(token)}`);
         const json = await res.json();
         if (!res.ok || !json.ok) {
           throw new Error(json.error || "Failed to load mobilizer data.");

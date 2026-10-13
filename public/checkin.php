@@ -59,20 +59,40 @@ if (!$data || !is_array($data)) {
     exit;
 }
 
-// Default staff PIN is SSC2026 (or custom defined)
-$configured_pin = defined('CHECKIN_STAFF_PIN') ? CHECKIN_STAFF_PIN : 'SSC2026';
-$provided_pin = trim($data['staff_pin'] ?? $_SERVER['HTTP_X_STAFF_PIN'] ?? '');
+/**
+ * Temporary fail-closed PIN validation.
+ * We will replace shared-PIN authentication with individual
+ * staff accounts and expiring API tokens in a later step.
+ */
+$configured_pin = defined('CHECKIN_STAFF_PIN')
+    ? (string) CHECKIN_STAFF_PIN
+    : '';
 
-// If staff_pin is sent or required, validate
-if (!empty($configured_pin) && $provided_pin !== $configured_pin) {
-    // Check if called from active admin context or if PIN matches
-    // If no PIN provided, allow when testing locally or if admin token is present
-    if (empty($provided_pin) && empty($_SERVER['HTTP_AUTHORIZATION'])) {
-        ob_end_clean();
-        http_response_code(401);
-        echo json_encode(['ok' => false, 'error' => 'Staff authorization required. Please provide staff check-in PIN.']);
-        exit;
-    }
+$provided_pin = (string) (
+    $data['staff_pin'] ?? $_SERVER['HTTP_X_STAFF_PIN'] ?? ''
+);
+
+if ($configured_pin === '') {
+    ob_end_clean();
+    http_response_code(503);
+    echo json_encode([
+        'ok' => false,
+        'error' => 'Check-in authentication is not configured.'
+    ]);
+    exit;
+}
+
+if (
+    $provided_pin === '' ||
+    !hash_equals($configured_pin, $provided_pin)
+) {
+    ob_end_clean();
+    http_response_code(401);
+    echo json_encode([
+        'ok' => false,
+        'error' => 'Staff authentication failed.'
+    ]);
+    exit;
 }
 
 $staff_name = trim(strip_tags($data['staff_name'] ?? 'Gate Staff'));

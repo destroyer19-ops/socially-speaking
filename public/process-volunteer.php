@@ -82,7 +82,10 @@ if (!$input) {
 }
 
 $conn = @new mysqli($db_host, $db_user, $db_pass, $db_name);
-if ($conn->connect_error) {
+if ($conn->connect_errno) {
+    $conn = @new mysqli('127.0.0.1', $db_user, $db_pass, $db_name);
+}
+if ($conn->connect_errno) {
     http_response_code(500);
     echo json_encode(['ok' => false, 'error' => 'Database connection failed']);
     exit;

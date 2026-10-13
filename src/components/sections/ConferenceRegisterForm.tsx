@@ -358,7 +358,8 @@ export function ConferenceRegisterForm() {
         }
       }
 
-      const res = await fetch("/process-ssc2026.php", {
+      const endpoint = (import.meta.env.BASE_URL || "/") + "process-ssc2026.php";
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
